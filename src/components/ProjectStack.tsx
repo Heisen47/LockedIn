@@ -21,6 +21,7 @@ interface Props {
 
 export default function ProjectStack({ user, projects }: Props) {
   const [index, setIndex] = useState(0);
+  const [following, setFollowing] = useState(false);
   const count = projects.length;
   const current = count > 0 ? projects[index] : undefined;
 
@@ -42,9 +43,25 @@ export default function ProjectStack({ user, projects }: Props) {
           <p className="text-sm font-semibold text-slate-200">{user.name}</p>
           <p className="text-xs text-slate-400">@{user.handle}</p>
         </div>
-        <span className="ml-auto text-xs text-slate-500">
-          {count === 0 ? "0 / 0" : `${index + 1} / ${count}`}
-        </span>
+        <div className="ml-auto flex items-center gap-3">
+          <span className="text-xs text-slate-500">
+            {count === 0 ? "0 / 0" : `${index + 1} / ${count}`}
+          </span>
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setFollowing((f) => !f)}
+            className={`rounded-full border px-3 py-1 text-xs transition ${
+              following
+                ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
+            }`}
+            aria-pressed={following}
+            aria-label={following ? "Unfollow" : "Follow"}
+          >
+            {following ? "Following" : "Follow"}
+          </motion.button>
+        </div>
       </div>
 
       {/* Stack visualization */}
