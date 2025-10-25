@@ -1,14 +1,15 @@
 ---
 interface Props {
 	transparent?: boolean;
+	minimal?: boolean;
 }
 
-const { transparent = false } = Astro.props;
+const { transparent = false, minimal = false } = Astro.props;
 ---
 
 <nav
 	class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-		transparent ? "bg-transparent" : "bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50"
+		transparent && !minimal ? "bg-transparent" : "bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50"
 	}`}
 >
 	<div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
@@ -17,25 +18,27 @@ const { transparent = false } = Astro.props;
 			<span class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-100">LockedIn</span>
 		</a>
 
-		<div class="flex items-center gap-6">
-			<a
-				href="#features"
-				class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
-			>
-				Features
-			</a>
-			<a
-				href="#community"
-				class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
-			>
-				Community
-			</a>
-			<a
-				href="/auth"
-				class="rounded-full bg-linear-to-tr from-cyan-400/90 to-pink-500/90 px-5 py-2 text-sm font-semibold text-slate-950 transition hover:opacity-90"
-			>
-				Get Started
-			</a>
-		</div>
+		{!minimal && (
+			<div class="flex items-center gap-6">
+				<a
+					href="#features"
+					class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
+				>
+					Features
+				</a>
+				<a
+					href="#community"
+					class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
+				>
+					Community
+				</a>
+				<a
+					href="/auth"
+					class="rounded-full bg-linear-to-tr from-cyan-400/90 to-pink-500/90 px-5 py-2 text-sm font-semibold text-slate-950 transition hover:opacity-90"
+				>
+					Get Started
+				</a>
+			</div>
+		)}
 	</div>
 </nav>
