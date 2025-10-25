@@ -1,11 +1,219 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const stats = [
+	{ label: "hours logged this month", value: "142" },
+	{ label: "active squads", value: "18" },
+	{ label: "ships launched", value: "37" },
+];
+
+const streaks = [
+	{ name: "Zed", streak: "58-day grind", focus: "full-stack MVP sprint" },
+	{ name: "Nova", streak: "41-day grind", focus: "web3 infra + docs" },
+	{ name: "Mira", streak: "33-day grind", focus: "ai tooling rollout" },
+];
+
+const features = [
+	{
+		title: "Deep Work Rooms",
+		description:
+			"Pair up, lock your sprint windows, and get accountability without the fluff.",
+	},
+	{
+		title: "Builder Playbooks",
+		description:
+			"Curated launch checklists and templates straight from repeat founders.",
+	},
+	{
+		title: "Ship Logs",
+		description:
+			"Track your releases, share progress clips, and build in public with signal.",
+	},
+	{
+		title: "Focus Analytics",
+		description:
+			"Quantify your flow states, celebrate streaks, and keep the momentum.",
+	},
+];
+
+const resources = [
+	{
+		title: "Grind Toolkit",
+		description: "A lightweight stack for rapid prototyping on nights + weekends.",
+		action: "Download",
+	},
+	{
+		title: "Community Vault",
+		description: "Notion hub with prompts, launch plans, and pitch decks.",
+		action: "Unlock",
+	},
+	{
+		title: "Office Hours",
+		description: "Weekly founder roundtables and live teardown streams.",
+		action: "Reserve",
+	},
+];
 ---
 
 <Layout>
-	<Welcome />
+	<main
+		class="relative isolate min-h-screen w-full overflow-hidden bg-[#050608] bg-fixed bg-[radial-gradient(circle_at_10%_20%,rgba(76,29,149,0.3),transparent_60%),radial-gradient(circle_at_90%_0%,rgba(6,182,212,0.2),transparent_55%),radial-gradient(circle_at_80%_80%,rgba(236,72,153,0.18),transparent_60%)] text-slate-100"
+		aria-labelledby="locked-in-heading"
+	>
+		<div
+			class="pointer-events-none absolute left-1/2 top-[-20vh] -z-10 h-[70vw] w-[70vw] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.4)_0%,rgba(14,116,144,0)_60%)] blur-[120px] opacity-60"
+			aria-hidden="true"
+		></div>
+
+		<div class="mx-auto flex w-full max-w-[1160px] flex-col px-5 pb-16 pt-10 sm:px-8 lg:px-14">
+
+		<header
+			class="sticky top-4 z-20 flex flex-col gap-4 rounded-3xl border border-slate-500/20 bg-slate-950/70 px-5 py-4 shadow-[0_30px_60px_rgba(15,23,42,0.3)] backdrop-blur-xl sm:top-6 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+ 		>
+			<div class="flex items-center gap-3 font-semibold uppercase tracking-[0.08em] text-slate-200">
+				<span class="h-3 w-3 rounded-full bg-linear-to-br from-cyan-400 to-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.6)]"></span>
+ 				<span class="text-sm">LockedIn</span>
+ 			</div>
+			<nav class="flex flex-wrap items-center justify-start gap-x-6 gap-y-2 text-sm font-medium text-slate-300 sm:justify-center" aria-label="Primary">
+				<a class="transition-colors duration-300 hover:text-white focus-visible:text-white" href="#grind-program">Program</a>
+				<a class="transition-colors duration-300 hover:text-white focus-visible:text-white" href="#streak-board">Streak Board</a>
+				<a class="transition-colors duration-300 hover:text-white focus-visible:text-white" href="#resources">Resources</a>
+ 			</nav>
+			<div class="flex flex-wrap items-center gap-3 text-sm font-semibold">
+ 				<a
+					class="inline-flex items-center justify-center rounded-full border border-slate-500/40 px-4 py-2 text-slate-200 transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.35)]"
+ 					href="#"
+ 				>
+ 					Sign in
+ 				</a>
+ 				<a
+					class="inline-flex items-center justify-center rounded-full bg-linear-to-tr from-cyan-400/90 to-pink-500/90 px-4 py-2 text-slate-950 transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.35)]"
+ 					href="#join"
+ 				>
+ 					Join the Grind
+ 				</a>
+ 			</div>
+ 		</header>
+
+		<section
+			class="mb-16 grid items-center gap-10 lg:gap-14 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]"
+ 			id="join"
+ 		>
+			<div class="space-y-8">
+				<h1 class="text-3xl font-semibold leading-[1.05] tracking-tight sm:text-4xl lg:text-5xl xl:text-6xl" id="locked-in-heading">
+ 					Stay locked in. Ship ruthless.
+ 				</h1>
+				<p class="max-w-xl text-base text-slate-300 sm:text-lg">
+ 					LockedIn is the dark-mode war room for builders who live on focus time, ship
+ 					velocity, and high-signal accountability.
+ 				</p>
+				<div class="flex flex-wrap gap-3 sm:gap-4">
+ 					<a
+						class="inline-flex items-center justify-center rounded-full bg-linear-to-tr from-cyan-400/90 to-pink-500/90 px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-950 transition hover:-translate-y-0.5 hover:opacity-90 sm:text-sm"
+ 						href="#"
+ 					>
+ 						Start a streak
+ 					</a>
+ 					<a
+						class="inline-flex items-center justify-center rounded-full border border-slate-500/40 bg-slate-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.35)] sm:text-sm"
+ 						href="#"
+ 					>
+ 						Sync with Discord
+ 					</a>
+ 				</div>
+ 			</div>
+ 			<div
+				class="grid gap-4 rounded-3xl border border-slate-500/15 bg-linear-to-br from-slate-900/90 to-slate-950/70 p-6 shadow-[inset_0_0_0_1px_rgba(6,182,212,0.05),0_25px_40px_rgba(8,47,73,0.35)] sm:p-8"
+ 				role="list"
+ 			>
+ 				{stats.map((item) => (
+ 					<article
+						class="flex flex-col gap-1 rounded-2xl border border-slate-500/20 bg-slate-950/90 p-4 shadow-[0_10px_20px_rgba(15,23,42,0.3)] sm:p-5"
+ 						role="listitem"
+ 					>
+ 						<span class="text-3xl font-semibold text-slate-50">{item.value}</span>
+						<span class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-xs">{item.label}</span>
+ 					</article>
+ 				))}
+ 			</div>
+ 		</section>
+
+		<section
+			class="mb-20 rounded-[28px] border border-slate-500/15 bg-linear-to-br from-cyan-500/10 to-pink-500/10 p-6 shadow-[0_35px_60px_rgba(8,47,73,0.32)] sm:rounded-4xl sm:p-10 lg:p-12"
+ 			id="grind-program"
+ 		>
+			<div class="mb-4 inline-flex items-center rounded-full border border-slate-500/30 bg-slate-900/80 px-3 py-1 text-[0.65rem] uppercase tracking-[0.24em] text-slate-400 sm:px-4">
+ 				build mode
+ 			</div>
+			<h2 class="text-2xl font-semibold text-slate-100 sm:text-3xl lg:text-4xl">Dialed-in focus, elevated squads.</h2>
+			<p class="mb-8 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base">
+ 				Curated squads, deep-work circuits, async check-ins, and launch-day playbooks engineered so you never lose momentum on your build.
+ 			</p>
+			<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+ 				{features.map((feature) => (
+ 					<article
+						class="group rounded-3xl border border-slate-500/20 bg-slate-950/80 p-5 shadow-[0_16px_32px_rgba(8,47,73,0.3)] transition duration-200 hover:-translate-y-1 hover:border-cyan-400/40 sm:p-6"
+ 					>
+						<h3 class="mb-2 text-base font-semibold text-slate-100 sm:mb-3 sm:text-lg">{feature.title}</h3>
+						<p class="text-sm leading-relaxed text-slate-400">{feature.description}</p>
+ 					</article>
+ 				))}
+ 			</div>
+ 		</section>
+
+		<section class="mb-20 grid gap-6" id="streak-board" aria-labelledby="streak-heading">
+			<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+				<h2 class="text-2xl font-semibold text-slate-100 sm:text-3xl" id="streak-heading">
+ 					Streak board
+ 				</h2>
+				<p class="text-sm text-slate-400">Proof of grind from the community.</p>
+ 			</div>
+			<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+ 				{streaks.map((streak) => (
+					<article class="rounded-3xl border border-slate-500/20 bg-linear-to-br from-slate-900/95 to-slate-950/90 p-5 shadow-[0_22px_45px_rgba(8,47,73,0.35)] sm:p-6">
+						<header class="mb-3 flex flex-wrap items-center justify-between gap-2">
+							<h3 class="text-base font-semibold text-slate-100 sm:text-lg">{streak.name}</h3>
+							<span class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-cyan-300 sm:text-xs">{streak.streak}</span>
+ 						</header>
+						<p class="text-sm leading-relaxed text-slate-400">{streak.focus}</p>
+ 					</article>
+ 				))}
+ 			</div>
+ 		</section>
+
+		<section class="mb-16 grid gap-6" id="resources">
+			<div class="space-y-3">
+				<h2 class="text-2xl font-semibold text-slate-100 sm:text-3xl">Fuel your next sprint</h2>
+				<p class="max-w-2xl text-sm text-slate-400 sm:text-base">
+ 					Toolkits, vault drops, and live sessions designed to keep you shipping.
+ 				</p>
+ 			</div>
+			<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+ 				{resources.map((resource) => (
+					<article class="flex flex-col gap-4 rounded-3xl border border-slate-500/20 bg-slate-950/80 p-5 shadow-[0_20px_40px_rgba(8,47,73,0.28)] sm:p-6">
+						<h3 class="text-base font-semibold text-slate-100 sm:text-lg">{resource.title}</h3>
+ 						<p class="text-sm leading-relaxed text-slate-400">{resource.description}</p>
+ 						<a
+							class="inline-flex items-center rounded-full bg-linear-to-tr from-cyan-400/85 to-pink-500/85 px-4 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-slate-900 transition hover:opacity-90 sm:text-xs"
+ 							href="#"
+ 						>
+ 							{resource.action}
+ 						</a>
+ 					</article>
+ 				))}
+ 			</div>
+ 		</section>
+
+		<footer class="mt-12 grid gap-4 border-t border-slate-500/10 pt-8 text-sm text-slate-400 sm:pt-10">
+			<div class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-200">LockedIn</div>
+			<p class="text-sm">Stay relentless. Build what's next.</p>
+			<nav class="flex flex-wrap gap-5" aria-label="Footer">
+				<a class="transition-colors duration-300 hover:text-slate-200 focus-visible:text-slate-200" href="#">Manifesto</a>
+				<a class="transition-colors duration-300 hover:text-slate-200 focus-visible:text-slate-200" href="#">Changelog</a>
+				<a class="transition-colors duration-300 hover:text-slate-200 focus-visible:text-slate-200" href="#">Twitter</a>
+				<a class="transition-colors duration-300 hover:text-slate-200 focus-visible:text-slate-200" href="#">Discord</a>
+ 			</nav>
+		</footer>
+		</div>
+	</main>
 </Layout>
