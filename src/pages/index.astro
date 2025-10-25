@@ -125,7 +125,7 @@ const benefits = [
                 <StaggerContainer client:load className="mt-20 grid w-full max-w-3xl grid-cols-3 gap-4">
                     {stats.map((stat) => (
                         <StaggerItem>
-                            <div class="relative rounded-2xl p-[1px] overflow-hidden shadow-[0_0_30px_rgba(6,182,212,0.3),0_0_60px_rgba(6,182,212,0.15)]">
+							<div class="relative rounded-2xl p-px overflow-hidden shadow-[0_0_30px_rgba(6,182,212,0.3),0_0_60px_rgba(6,182,212,0.15)]">
                                 <div class="absolute inset-0 animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0%,transparent_40%,rgba(6,182,212,0.9)_50%,transparent_60%,transparent_100%)]"></div>
                                 <div class="relative bg-slate-900/90 rounded-2xl">
                                     <StatCard stat={stat} />
@@ -236,7 +236,7 @@ const benefits = [
 					</p>
 					<a
 						href="/auth"
-						class="inline-flex items-center justify-center rounded-full border border-slate-700/60 bg-[linear-gradient(in_oklab,_to_right,_#fdeff9_0%,_#ec38bc_35%,_#7303c0_75%,_#03001e_100%)] px-8 py-4 text-base font-semibold text-slate-200 backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90"
+						class="inline-flex items-center justify-center rounded-full border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] px-8 py-4 text-base font-semibold text-slate-200 backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90"
 					>
 						Get Started
 					</a>

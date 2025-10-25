@@ -1,10 +1,11 @@
 ---
 interface Props {
-	transparent?: boolean;
-	minimal?: boolean;
+  transparent?: boolean;
+  minimal?: boolean;
+  page?: "home" | "feed" | "building";
 }
 
-const { transparent = false, minimal = false } = Astro.props;
+const { transparent = false, minimal = false, page = "home" } = Astro.props;
 ---
 
 <nav
@@ -18,26 +19,27 @@ const { transparent = false, minimal = false } = Astro.props;
 			<span class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-100">LockedIn</span>
 		</a>
 
-		{!minimal && (
+		{!minimal && page === "home" && (
 			<div class="flex items-center gap-6">
-				<a
-					href="#features"
-					class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
-				>
-					Features
-				</a>
-				<a
-					href="#community"
-					class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
-				>
-					Community
-				</a>
-				<a
-					href="/auth"
-					class="rounded-full bg-linear-to-tr from-cyan-400/90 to-pink-500/90 px-5 py-2 text-sm font-semibold text-slate-950 transition hover:opacity-90"
-				>
-					Get Started
-				</a>
+				<a href="#features" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Features</a>
+				<a href="#community" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Community</a>
+				<a href="/auth" class="rounded-full px-5 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Get Started</a>
+			</div>
+		)}
+
+		{!minimal && page === "feed" && (
+			<div class="flex items-center gap-4 sm:gap-6">
+				<a href="/feed" class={`hidden md:block text-sm font-medium transition-colors ${page === "feed" ? "text-white" : "text-slate-300 hover:text-white"}`}>Feed</a>
+				<a href="/building" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Building</a>
+				<a href="/auth" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-slate-900/40 backdrop-blur-sm hover:border-slate-600/60 transition">Submit</a>
+			</div>
+		)}
+
+		{!minimal && page === "building" && (
+			<div class="flex items-center gap-4 sm:gap-6">
+				<a href="/feed" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Feed</a>
+				<a href="/building" class="hidden md:block text-sm font-medium text-white">Building</a>
+				<a href="/auth" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Submit</a>
 			</div>
 		)}
 	</div>

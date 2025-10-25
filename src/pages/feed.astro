@@ -1,0 +1,144 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import ProjectStack from "../components/ProjectStack";
+import type { Project } from "../components/ProjectStack";
+
+const users: { name: string; handle: string; projects: Project[] }[] = [
+	{
+		name: "Alex Chen",
+		handle: "alexcodes",
+		projects: [
+			{
+				id: "p1",
+				title: "Realtime Kanban",
+				description: "A collaborative Kanban with CRDT sync and offline support.",
+				tags: ["React", "CRDT", "WebSocket"],
+				status: "live" as const,
+				score: 124,
+				comments: [
+					{ id: "c1", author: "Maya", text: "Love the drag latency!" },
+				],
+			},
+			{
+				id: "p2",
+				title: "Edge Vector Search",
+				description: "Cloudflare Workers + HNSW for blazing vector search near users.",
+				tags: ["Cloudflare", "HNSW", "TypeScript"],
+				status: "building" as const,
+				score: 88,
+				comments: [],
+			},
+			{
+				id: "p3",
+				title: "AI Note Weaving",
+				description: "Semantic backlinks that auto-organize notes into living maps.",
+				tags: ["LLM", "Embeddings", "UX"],
+				status: "live" as const,
+				score: 203,
+				comments: [],
+			},
+			{
+				id: "p4",
+				title: "Offline Notifier",
+				description: "Service Worker powered notifications with resilient queues.",
+				tags: ["SW", "IndexedDB", "PWA"],
+				status: "building" as const,
+				score: 47,
+				comments: [],
+			},
+			{
+				id: "p5",
+				title: "Terminal TUI Toolkit",
+				description: "Composable terminal UI components with WebAssembly backends.",
+				tags: ["Rust", "WASM", "CLI"],
+				status: "live" as const,
+				score: 76,
+				comments: [],
+			},
+			{
+				id: "p6",
+				title: "Realtime Markdown",
+				description: "Collaborative markdown editor with CRDT + syntax-aware cursors.",
+				tags: ["CRDT", "Monaco", "WebRTC"],
+				status: "building" as const,
+				score: 129,
+				comments: [],
+			},
+		],
+	},
+	{
+		name: "Sara Malik",
+		handle: "saramalik",
+		projects: [
+			{
+				id: "s1",
+				title: "Open Source Payroll",
+				description: "Self-hosted payroll for indie teams—simple, transparent.",
+				tags: ["Go", "Postgres", "Docker"],
+					status: "building" as const,
+				score: 0,
+				comments: [],
+			},
+			{
+				id: "s2",
+				title: "3D Scene Editor",
+				description: "Browser-native scene editor with procedural assets.",
+				tags: ["Three.js", "WebGPU", "Procedural"],
+					status: "building" as const,
+				score: 150,
+				comments: [],
+			},
+			{
+				id: "s3",
+				title: "Feature Flag Service",
+				description: "Tiny multi-tenant feature flags with SDKs and streaming.",
+				tags: ["Node", "Redis", "SSE"],
+					status: "live" as const,
+				score: 45,
+				comments: [],
+			},
+			{
+				id: "s4",
+				title: "Design Token Sync",
+				description: "Sync design tokens across Figma, CSS, and mobile.",
+				tags: ["Figma", "Tokens", "CI"],
+					status: "building" as const,
+				score: 64,
+				comments: [],
+			},
+			{
+				id: "s5",
+				title: "Edge A/B Runner",
+				description: "Deterministic A/B routing at the edge with metrics.",
+				tags: ["Edge", "Analytics", "TypeScript"],
+					status: "live" as const,
+				score: 88,
+				comments: [],
+			},
+		],
+	},
+];
+---
+
+<Layout>
+	<Navbar page="feed" />
+
+	<main class="relative min-h-screen w-full bg-[#050608] text-slate-100">
+		<div class="mx-auto w-full max-w-6xl px-5 pb-24 pt-28 sm:px-8 lg:px-12">
+			<header class="mb-10">
+				<h1 class="text-3xl font-bold sm:text-4xl">Feed</h1>
+				<p class="mt-2 text-slate-400">Stacks of what people are shipping—drag to browse each stack.</p>
+			</header>
+
+			<section class="space-y-10">
+				{users.map((u) => (
+					<div class="isolate rounded-3xl border border-slate-800/60 bg-slate-900 p-6">
+						<ProjectStack client:load user={{ name: u.name, handle: u.handle }} projects={u.projects} />
+					</div>
+				))}
+			</section>
+		</div>
+	</main>
+</Layout>
+
