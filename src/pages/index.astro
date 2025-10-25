@@ -108,7 +108,7 @@ const benefits = [
 					<div class="flex flex-wrap items-center justify-center gap-4">
 						<a
 							href="/auth"
-							class="inline-flex items-center justify-center rounded-full bg-linear-to-tr from-cyan-400/90 to-pink-500/90 px-8 py-4 text-base font-semibold text-slate-950 transition hover:opacity-90 cursor-pointer"
+                            class="inline-flex items-center justify-center rounded-full border border-slate-700/60 bg-gradient-to-r from-cyan-400/90 to-pink-500/90 px-8 py-4 text-base font-semibold text-slate-200 backdrop-blur-sm transition hover:border-slate-600/60 hover:bg-gradient-to-r hover:from-pink-500/80 hover:to-cyan-400/80 hover:opacity-80"
 						>
 							Join Us!
 						</a>
@@ -122,13 +122,18 @@ const benefits = [
 				</FadeIn>
 
 				<!-- Stats -->
-				<StaggerContainer client:load className="mt-20 grid w-full max-w-3xl grid-cols-3 gap-4">
-					{stats.map((stat) => (
-						<StaggerItem>
-							<StatCard stat={stat} />
-						</StaggerItem>
-					))}
-				</StaggerContainer>
+                <StaggerContainer client:load className="mt-20 grid w-full max-w-3xl grid-cols-3 gap-4">
+                    {stats.map((stat) => (
+                        <StaggerItem>
+                            <div class="relative rounded-2xl p-[1px] overflow-hidden shadow-[0_0_30px_rgba(6,182,212,0.3),0_0_60px_rgba(6,182,212,0.15)]">
+                                <div class="absolute inset-0 animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0%,transparent_40%,rgba(6,182,212,0.9)_50%,transparent_60%,transparent_100%)]"></div>
+                                <div class="relative bg-slate-900/90 rounded-2xl">
+                                    <StatCard stat={stat} />
+                                </div>
+                            </div>
+                        </StaggerItem>
+                    ))}
+                </StaggerContainer>
 			</section>
 
 			<!-- Features Section -->
