@@ -173,11 +173,9 @@ const users: { name: string; handle: string; projects: Project[] }[] = [
 
 			<section class="space-y-10">
 				{users.map((u) => (
-					<FadeIn client:load>
-						<div class="isolate rounded-3xl border border-slate-800/60 bg-slate-900 p-6">
-							<ProjectStack client:load user={{ name: u.name, handle: u.handle }} projects={u.projects} />
-						</div>
-					</FadeIn>
+					<div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6 backdrop-blur-xl">
+						<ProjectStack client:load user={{ name: u.name, handle: u.handle }} projects={u.projects} />
+					</div>
 				))}
 			</section>
 		</div>
