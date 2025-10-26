@@ -12,6 +12,10 @@ export interface Project {
   status: "live" | "building";
   score?: number;
   comments?: { id: string; author: string; text: string }[];
+  // Optional GitHub/meta stats
+  durationDays?: number; // duration from first commit to latest, in days
+  stars?: number;
+  forks?: number;
 }
 
 interface Props {
@@ -120,9 +124,31 @@ export default function ProjectStack({ user, projects }: Props) {
                     <h3 className="mb-2 text-xl font-semibold text-slate-100">
                       {p.title}
                     </h3>
-                    <p className="mb-4 text-sm leading-relaxed text-slate-300">
+                    <p className="mb-3 text-sm leading-relaxed text-slate-300">
                       {p.description}
                     </p>
+                    {(typeof p.durationDays === "number" || typeof p.stars === "number" || typeof p.forks === "number") && (
+                      <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                        {typeof p.durationDays === "number" && (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/40 px-2 py-1">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-slate-500"><path d="M12 8v5l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+                            {p.durationDays} days
+                          </span>
+                        )}
+                        {typeof p.stars === "number" && (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/40 px-2 py-1">
+                            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-yellow-400" fill="currentColor"><path d="M12 17.3 6.2 20.6l1.1-6.5-4.7-4.6 6.6-1 3-6 3 6 6.6 1-4.7 4.6 1.1 6.5z"/></svg>
+                            {p.stars}
+                          </span>
+                        )}
+                        {typeof p.forks === "number" && (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/40 px-2 py-1">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-slate-500"><path d="M7 4v4a4 4 0 0 0 4 4h2a4 4 0 0 1 4 4v4"/><circle cx="7" cy="4" r="2"/><circle cx="17" cy="20" r="2"/><circle cx="17" cy="8" r="2"/></svg>
+                            {p.forks}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between gap-4">
