@@ -16,6 +16,7 @@ export interface Project {
   durationDays?: number; // duration from first commit to latest, in days
   stars?: number;
   forks?: number;
+  createdAt?: string | number | Date; // when the post was made
 }
 
 interface Props {
@@ -109,12 +110,27 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
                     if (info.offset.x > 100) prev();
                     else if (info.offset.x < -100) next();
                   }}
-                  className={`flex h-full flex-col justify-between overflow-hidden rounded-3xl border backdrop-blur-xl ${
+                  className={`relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border backdrop-blur-xl ${
                     isFront
                       ? "border-slate-800/60 bg-slate-900 shadow-xl"
                       : "border-slate-800/60 bg-slate-900/40"
                   } p-5`}
                 >
+                  {/* Timestamp (top-right, per project) */}
+                  {p.createdAt && (
+                    (() => {
+                      const d = new Date(p.createdAt);
+                      const iso = d.toISOString();
+                      const short = d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+                      return (
+                        <div className="absolute right-5 top-5">
+                          <span className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-900/40 px-3 py-1 text-xs text-slate-300">
+                            <time dateTime={iso}>{short}</time>
+                          </span>
+                        </div>
+                      );
+                    })()
+                  )}
                   <div>
                     <div className="mb-2 flex items-center gap-2">
                       {p.status === "building" && (
@@ -180,7 +196,7 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
 
       {/* Comments */}
       <div className="mt-4">
-        <CommentBox initial={current?.comments ?? []} />
+        <CommentBox key={current?.id ?? "none"} initial={current?.comments ?? []} />
       </div>
     </div>
   );
