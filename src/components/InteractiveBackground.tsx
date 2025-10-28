@@ -9,7 +9,7 @@ export default function InteractiveBackground() {
 	const cols = 12;
 
 	return (
-		<div className="pointer-events-none fixed inset-0 overflow-hidden opacity-40">
+		<div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden opacity-40">
 			<div className="grid h-full w-full" style={{
 				gridTemplateColumns: `repeat(${cols}, 1fr)`,
 				gridTemplateRows: `repeat(${rows}, 1fr)`,

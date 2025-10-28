@@ -69,7 +69,7 @@ const benefits = [
 	<Navbar />
 	
 	<main
-		class="relative isolate min-h-screen w-full overflow-hidden bg-[#050608] bg-fixed text-slate-100"
+		class="relative isolate z-10 min-h-screen w-full overflow-hidden bg-[#050608] bg-fixed text-slate-100"
 		aria-labelledby="locked-in-heading"
 	>
 		<!-- Interactive Background -->
@@ -250,12 +250,11 @@ const benefits = [
 					<span class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-200">LockedIn</span>
 				</div>
 				<p class="mb-6 text-sm text-slate-400">For builders who ship.</p>
-				<nav class="flex flex-wrap justify-center gap-6 text-sm text-slate-400" aria-label="Footer">
-					<a class="transition-colors hover:text-slate-200" href="#">About</a>
-					<a class="transition-colors hover:text-slate-200" href="#">GitHub</a>
-					<a class="transition-colors hover:text-slate-200" href="#">Twitter</a>
-					<a class="transition-colors hover:text-slate-200" href="#">Discord</a>
-				</nav>
+                <nav class="flex flex-wrap justify-center gap-6 text-sm text-slate-400" aria-label="Footer">
+                    <a class="transition-colors hover:text-slate-200 cursor-pointer" href="https://github.com/Heisen47" target="_blank" rel="noopener noreferrer">GitHub</a>
+                    <a class="transition-colors hover:text-slate-200 cursor-pointer" href="https://x.com/iWriteCode__" target="_blank" rel="noopener noreferrer">Twitter</a>
+                    <a class="transition-colors hover:text-slate-200 cursor-pointer" href="https://www.linkedin.com/in/saptarshi-chakraborty-3031999march/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                </nav>
 			</footer>
 		</div>
 	</main>
