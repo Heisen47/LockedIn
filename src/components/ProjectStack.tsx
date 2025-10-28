@@ -21,9 +21,10 @@ export interface Project {
 interface Props {
   user: { name: string; handle: string; avatar?: string };
   projects: Project[];
+  showFollow?: boolean; // whether to show the Follow button in header (defaults to true)
 }
 
-export default function ProjectStack({ user, projects }: Props) {
+export default function ProjectStack({ user, projects, showFollow = true }: Props) {
   const [index, setIndex] = useState(0);
   const [following, setFollowing] = useState(false);
   const count = projects.length;
@@ -51,20 +52,22 @@ export default function ProjectStack({ user, projects }: Props) {
           <span className="text-xs text-slate-500">
             {count === 0 ? "0 / 0" : `${index + 1} / ${count}`}
           </span>
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setFollowing((f) => !f)}
-            className={`rounded-full border px-3 py-1 text-xs transition ${
-              following
-                ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
-                : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
-            }`}
-            aria-pressed={following}
-            aria-label={following ? "Unfollow" : "Follow"}
-          >
-            {following ? "Following" : "Follow"}
-          </motion.button>
+          {showFollow && (
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setFollowing((f) => !f)}
+              className={`rounded-full border px-3 py-1 text-xs transition ${
+                following
+                  ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                  : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
+              }`}
+              aria-pressed={following}
+              aria-label={following ? "Unfollow" : "Follow"}
+            >
+              {following ? "Following" : "Follow"}
+            </motion.button>
+          )}
         </div>
       </div>
 

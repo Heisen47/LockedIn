@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
 import ProjectStack from "../../components/ProjectStack";
+import EditProfileButton from "../../components/EditProfileButton";
 import { FadeIn, StaggerContainer, StaggerItem } from "../../components/Animations";
 import type { Project } from "../../components/ProjectStack";
 
@@ -79,7 +80,7 @@ const projects: Project[] = [
   <Navbar />
 
   <main class="relative min-h-screen w-full bg-[#050608] text-slate-100">
-    <div class="mx-auto w-full max-w-6xl px-5 pb-24 pt-28 sm:px-8 lg:px-12">
+  <div class="mx-auto w-full max-w-6xl px-5 pb-24 pt-28 sm:px-8 lg:px-12" data-profile-handle={handle}>
       <!-- Profile Header -->
       <header class="mb-10">
         <FadeIn client:load>
@@ -93,15 +94,22 @@ const projects: Project[] = [
               <div>
                 <h1 class="text-2xl font-bold sm:text-3xl">{profile.name}</h1>
                 <p class="text-slate-400">@{profile.handle}</p>
-                <p class="mt-2 max-w-2xl text-sm text-slate-300">{profile.bio}</p>
+                <p id="profile-bio" class="mt-2 max-w-2xl text-sm text-slate-300">{profile.bio}</p>
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <a href={`mailto:${profile.email}`} class="rounded-xl border border-slate-700/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-200 hover:border-slate-600/60">Email</a>
-              <a href={profile.github} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-700/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-200 hover:border-slate-600/60">GitHub</a>
-              <a href={profile.linkedin} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-700/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-200 hover:border-slate-600/60">LinkedIn</a>
-              <a href={profile.website} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-700/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-200 hover:border-slate-600/60">Website</a>
-              <a href="/feed" class="rounded-xl border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] px-3 py-2 text-sm font-semibold text-slate-100 hover:border-slate-600/60">Follow</a>
+              <a id="profile-email" href={`mailto:${profile.email}`} class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">Email</a>
+              <a href={profile.github} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">GitHub</a>
+              <a href={profile.linkedin} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">LinkedIn</a>
+              <a id="profile-website" href={profile.website} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">Website</a>
+              <EditProfileButton
+                client:load
+                handle={profile.handle}
+                initialEmail={profile.email}
+                initialWebsite={profile.website}
+                initialBio={profile.bio}
+                className="rounded-xl border border-indigo-500/30 bg-[linear-gradient(in_oklab,to_right,#6EE7F9_0%,#7C3AED_100%)] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+              />
             </div>
           </div>
         </FadeIn>
@@ -154,9 +162,35 @@ const projects: Project[] = [
       <!-- Projects Stack -->
       <section>
         <div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6 backdrop-blur-xl">
-          <ProjectStack client:load user={{ name: profile.name, handle: profile.handle }} projects={projects} />
+          <ProjectStack client:load user={{ name: profile.name, handle: profile.handle }} projects={projects} showFollow={false} />
         </div>
       </section>
     </div>
   </main>
+
+  <script>
+    const root = document.querySelector('[data-profile-handle]');
+    const profileHandle = (root && (root as HTMLElement).getAttribute('data-profile-handle')) || '';
+    const get = (k: string) => {
+      try { return localStorage.getItem(`profile:${profileHandle}:${k}`); } catch { return null; }
+    };
+    const apply = () => {
+      const bioEl = document.getElementById('profile-bio');
+      const emailEl = document.getElementById('profile-email');
+      const websiteEl = document.getElementById('profile-website');
+      const bio = get('bio');
+      const email = get('email');
+      const website = get('website');
+      if (bioEl && bio) bioEl.textContent = bio;
+      if (emailEl && email) emailEl.setAttribute('href', `mailto:${email}`);
+      if (websiteEl && website) websiteEl.setAttribute('href', website);
+    };
+    if (typeof window !== 'undefined') {
+      apply();
+      window.addEventListener('profile:updated', (e: any) => {
+        if (!e.detail || e.detail.handle !== profileHandle) return;
+        apply();
+      });
+    }
+  </script>
 </Layout>
