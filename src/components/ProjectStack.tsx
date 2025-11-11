@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import VoteButtons from "./VoteButtons";
 import TagList from "./TagList";
@@ -28,6 +28,12 @@ interface Props {
 export default function ProjectStack({ user, projects, showFollow = true }: Props) {
   const [index, setIndex] = useState(0);
   const [following, setFollowing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportText, setReportText] = useState("");
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const count = projects.length;
   const current = count > 0 ? projects[index] : undefined;
 
@@ -39,6 +45,26 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
     if (count === 0) return;
     setIndex((i) => (i - 1 + count) % count);
   };
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setReportOpen(false);
+        setBlockOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
   return (
     <div className="relative">
@@ -54,20 +80,63 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
             {count === 0 ? "0 / 0" : `${index + 1} / ${count}`}
           </span>
           {showFollow && (
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setFollowing((f) => !f)}
-              className={`rounded-full border px-3 py-1 text-xs transition ${
-                following
-                  ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
-                  : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
-              }`}
-              aria-pressed={following}
-              aria-label={following ? "Unfollow" : "Follow"}
-            >
-              {following ? "Following" : "Follow"}
-            </motion.button>
+            <>
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setFollowing((f) => !f)}
+                className={`rounded-full border px-3 py-1 text-xs transition ${
+                  following
+                    ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                    : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
+                }`}
+                aria-pressed={following}
+                aria-label={following ? "Unfollow" : "Follow"}
+              >
+                {following ? "Following" : "Follow"}
+              </motion.button>
+              <div ref={menuRef} className="relative">
+                <button
+                  type="button"
+                  aria-label="More actions"
+                  aria-haspopup="true"
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                    <circle cx="4" cy="10" r="1.5" />
+                    <circle cx="10" cy="10" r="1.5" />
+                    <circle cx="16" cy="10" r="1.5" />
+                  </svg>
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 z-20 mt-2 w-36 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/95 p-1 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setReportOpen(true);
+                        setReportSubmitted(false);
+                      }}
+                      className="block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800/60"
+                    >
+                      Report
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setBlockOpen(true);
+                      }}
+                      className="mt-1 block w-full rounded-lg px-3 py-2 text-left text-sm text-rose-300 hover:bg-rose-500/10"
+                    >
+                      Block
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -198,6 +267,85 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
       <div className="mt-4">
         <CommentBox key={current?.id ?? "none"} initial={current?.comments ?? []} />
       </div>
+
+      {/* Report Modal */}
+      {reportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setReportOpen(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-800/60 bg-slate-900/95 p-5 shadow-2xl">
+            {!reportSubmitted ? (
+              <>
+                <h3 className="mb-2 text-lg font-semibold text-slate-100">Report project</h3>
+                <p className="mb-4 text-sm text-slate-400">Tell us briefly what’s wrong. This is a demo—no data leaves your browser.</p>
+                <textarea
+                  value={reportText}
+                  onChange={(e) => setReportText(e.target.value)}
+                  rows={4}
+                  className="w-full resize-y rounded-lg border border-slate-700/60 bg-slate-900/60 p-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600/60 focus:outline-none"
+                  placeholder="Spam, abusive content, or other issues…"
+                />
+                <div className="mt-4 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setReportOpen(false)}
+                    className="rounded-lg border border-slate-700/60 bg-slate-900/40 px-3 py-1.5 text-sm text-slate-200 hover:border-slate-600/60"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Simulate submit
+                      setReportSubmitted(true);
+                      setReportText("");
+                    }}
+                    className="rounded-lg border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#00c6ff_0%,#0072ff_100%)] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                    disabled={reportText.trim().length === 0}
+                  >
+                    Submit
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="mb-2 text-lg font-semibold text-slate-100">Report received</h3>
+                <p className="mb-4 text-sm text-slate-400">Thanks for the report. We’ll review this project shortly. (Demo message)</p>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setReportOpen(false)}
+                    className="rounded-lg border border-slate-700/60 bg-slate-900/40 px-3 py-1.5 text-sm text-slate-200 hover:border-slate-600/60"
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Block Modal */}
+      {blockOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setBlockOpen(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-800/60 bg-slate-900/95 p-5 shadow-2xl">
+            <h3 className="mb-2 text-lg font-semibold text-slate-100">User blocked</h3>
+            <p className="mb-4 text-sm text-slate-400">
+              You won’t see @{user.handle}’s future posts again. This is a demo action and affects only your current session.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setBlockOpen(false)}
+                className="rounded-lg border border-slate-700/60 bg-slate-900/40 px-3 py-1.5 text-sm text-slate-200 hover:border-slate-600/60"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

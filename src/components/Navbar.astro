@@ -25,6 +25,7 @@ const { transparent = false, minimal = false, page = "home" } = Astro.props;
 			<div class="flex items-center gap-6">
 				<a href="#features" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Features</a>
 				<a href="#community" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Community</a>
+				<a href="/feed" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Feed</a>
 				<a href="/auth" class="rounded-full px-5 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Get Started</a>
 				<ProfileMenu client:load handle="alexcodes" />
 			</div>
