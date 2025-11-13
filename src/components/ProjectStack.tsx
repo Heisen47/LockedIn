@@ -295,7 +295,6 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
                   <button
                     type="button"
                     onClick={() => {
-                      // Simulate submit
                       setReportSubmitted(true);
                       setReportText("");
                     }}
