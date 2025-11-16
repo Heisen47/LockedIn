@@ -257,11 +257,7 @@ export default function TechStackInput({
                   <button
                     key={tech}
                     type="button"
-                    onClick={() => {
-                      setInput(tech);
-                      setShowDropdown(false);
-                      inputRef.current?.focus();
-                    }}
+                    onClick={() => addTag(tech)}
                     onMouseEnter={() => setHighlightedIndex(idx)}
                     className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition ${active ? 'bg-slate-800/70 text-slate-100' : 'text-slate-200 hover:bg-slate-800/60'}`}
                   >

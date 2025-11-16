@@ -5,7 +5,7 @@ interface Props {
 	transparent?: boolean;
 	minimal?: boolean;
 	page?: "home" | "feed" | "building" | "profile" | "about";
-	loggedIn?: boolean; // whether user is authenticated
+	loggedIn?: boolean; 
 }
 
 const { transparent = false, minimal = false, page = "home", loggedIn = false } = Astro.props;

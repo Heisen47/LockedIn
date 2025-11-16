@@ -21,31 +21,33 @@ export default function EditableBio({
 }: EditableBioProps) {
   const storageKey = useMemo(() => `profile:${handle}:bio`, [handle]);
 
-  const [bio, setBio] = useState<string>(initialBio);
+  // Load initial bio from localStorage or use initialBio
+  const [bio, setBio] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return (saved && saved.trim().length > 0) ? saved : initialBio;
+    } catch {
+      return initialBio;
+    }
+  });
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState<string>(initialBio);
+  const [draft, setDraft] = useState<string>(bio);
   const [saving, setSaving] = useState(false);
 
-  // Load any saved bio on mount
+  // Update when handle or initialBio changes (e.g., viewing different profile)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
-      if (saved && saved.trim().length > 0) {
-        setBio(saved);
-        setDraft(saved);
-      }
+      const newBio = (saved && saved.trim().length > 0) ? saved : initialBio;
+      setBio(newBio);
+      setDraft(newBio);
+      setEditing(false);
     } catch {
-      // no-op
+      setBio(initialBio);
+      setDraft(initialBio);
+      setEditing(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey]);
-
-  // Ensure initialBio changes (other handles) reset state
-  useEffect(() => {
-    setBio(initialBio);
-    setDraft(initialBio);
-    setEditing(false);
-  }, [initialBio, handle]);
+  }, [initialBio, handle, storageKey]);
 
   const remaining = maxLength - draft.length;
   const tooLong = remaining < 0;
