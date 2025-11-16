@@ -28,6 +28,7 @@ interface Props {
 export default function ProjectStack({ user, projects, showFollow = true }: Props) {
   const [index, setIndex] = useState(0);
   const [following, setFollowing] = useState(false);
+  const [awarded, setAwarded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState("");
@@ -71,29 +72,47 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
       {/* Header */}
       <div className="mb-3 flex items-center gap-3">
         <div className="h-8 w-8 shrink-0 rounded-full bg-slate-800/60" />
-        <div>
-          <p className="text-sm font-semibold text-slate-200">{user.name}</p>
-          <p className="text-xs text-slate-400">@{user.handle}</p>
+        <div className="flex items-center gap-2">
+          <div>
+            <p className="text-sm font-semibold text-slate-200">{user.name}</p>
+            <p className="text-xs text-slate-400">@{user.handle}</p>
+          </div>
+          {showFollow && (
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setFollowing((f) => !f)}
+              className={`ml-2 rounded-full border px-4 py-1.5 text-sm transition ${
+                following
+                  ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                  : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
+              }`}
+              aria-pressed={following}
+              aria-label={following ? "Unfollow" : "Follow"}
+            >
+              {following ? "Following" : "Follow"}
+            </motion.button>
+          )}
         </div>
         <div className="ml-auto flex items-center gap-3">
-          <span className="text-xs text-slate-500">
-            {count === 0 ? "0 / 0" : `${index + 1} / ${count}`}
-          </span>
           {showFollow && (
             <>
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setFollowing((f) => !f)}
-                className={`rounded-full border px-3 py-1 text-xs transition ${
-                  following
-                    ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                onClick={() => setAwarded((a) => !a)}
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition ${
+                  awarded
+                    ? "border-amber-500/60 bg-amber-500/10 text-amber-300"
                     : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
                 }`}
-                aria-pressed={following}
-                aria-label={following ? "Unfollow" : "Follow"}
+                aria-pressed={awarded}
+                aria-label={awarded ? "Remove award" : "Give award"}
               >
-                {following ? "Following" : "Follow"}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
+                  <path fillRule="evenodd" d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 0 0-.584.859 6.753 6.753 0 0 0 6.138 5.6 6.73 6.73 0 0 0 2.743 1.346A6.707 6.707 0 0 1 9.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a2.25 2.25 0 0 0-2.25 2.25c0 .414.336.75.75.75h15a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-2.25-2.25h-.75v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 0 1-1.112-3.173 6.73 6.73 0 0 0 2.743-1.347 6.753 6.753 0 0 0 6.139-5.6.75.75 0 0 0-.585-.858 47.077 47.077 0 0 0-3.07-.543V2.62a.75.75 0 0 0-.658-.744 49.22 49.22 0 0 0-6.093-.377c-2.063 0-4.096.128-6.093.377a.75.75 0 0 0-.657.744Zm0 2.629c0 1.196.312 2.32.857 3.294A5.266 5.266 0 0 1 3.16 5.337a45.6 45.6 0 0 1 2.006-.343v.256Zm13.5 0v-.256c.674.1 1.343.214 2.006.343a5.265 5.265 0 0 1-2.863 3.207 6.72 6.72 0 0 0 .857-3.294Z" clipRule="evenodd" />
+                </svg>
+                {awarded ? "Awarded" : "Award"}
               </motion.button>
               <div ref={menuRef} className="relative">
                 <button
@@ -179,29 +198,35 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
                     if (info.offset.x > 100) prev();
                     else if (info.offset.x < -100) next();
                   }}
-                  className={`relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border backdrop-blur-xl ${
+                  className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border backdrop-blur-xl ${
                     isFront
                       ? "border-slate-800/60 bg-slate-900 shadow-xl"
                       : "border-slate-800/60 bg-slate-900/40"
                   } p-5`}
                 >
-                  {/* Timestamp (top-right, per project) */}
-                  {p.createdAt && (
-                    (() => {
-                      const d = new Date(p.createdAt);
-                      const iso = d.toISOString();
-                      const short = d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-                      return (
-                        <div className="absolute right-5 top-5">
-                          <span className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-900/40 px-3 py-1 text-xs text-slate-300">
+                  {/* Slide count and timestamp (top-right, inside card) */}
+                  <div className="absolute right-5 top-5 flex flex-col items-end gap-2">
+                    <span className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-900/60 px-3 py-1 text-xs font-medium text-slate-400">
+                      {index + 1} / {count}
+                    </span>
+                    {p.createdAt && (
+                      (() => {
+                        const d = new Date(p.createdAt);
+                        const iso = d.toISOString();
+                        const short = d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+                        return (
+                          <span className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-900/40 px-3 py-1 text-xs text-slate-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                             <time dateTime={iso}>{short}</time>
                           </span>
-                        </div>
-                      );
-                    })()
-                  )}
+                        );
+                      })()
+                    )}
+                  </div>
                   <div>
-                    <div className="mb-2 flex items-center gap-2">
+                    <h3 className="mb-2 text-xl font-semibold text-slate-100">
+                      {p.title}
+                    </h3>
+                    <div className="mb-2 flex items-center gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                       {p.status === "building" && (
                         <span className="rounded-full border border-amber-400/50 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-300">
                           Building
@@ -209,14 +234,11 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
                       )}
                       <TagList tags={p.tags} />
                     </div>
-                    <h3 className="mb-2 text-xl font-semibold text-slate-100">
-                      {p.title}
-                    </h3>
-                    <p className="mb-3 text-sm leading-relaxed text-slate-300">
+                    <p className="mb-3 text-sm leading-relaxed text-slate-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                       {p.description}
                     </p>
                     {(typeof p.durationDays === "number" || typeof p.stars === "number" || typeof p.forks === "number") && (
-                      <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                      <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                         {typeof p.durationDays === "number" && (
                           <span className="inline-flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/40 px-2 py-1">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-slate-500"><path d="M12 8v5l3 3"/><circle cx="12" cy="12" r="9"/></svg>
