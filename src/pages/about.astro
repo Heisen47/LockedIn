@@ -1,0 +1,261 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import FeatureCard from "../components/FeatureCard.astro";
+import StatCard from "../components/StatCard.astro";
+import InteractiveBackground from "../components/InteractiveBackground";
+import { FadeIn, StaggerContainer, StaggerItem, ScaleIn } from "../components/Animations";
+
+const stats = [
+  { label: "Active Builders", value: "2.4K" },
+  { label: "Projects Shipped", value: "680" },
+  { label: "Code Hours", value: "12K+" },
+];
+
+const features = [
+  {
+    title: "Showcase Projects",
+    description: "Share your work with a community that gets it. Real builders, real feedback.",
+  },
+  {
+    title: "Vote & Discover",
+    description: "Upvote the best projects. Let quality rise to the top organically.",
+  },
+  {
+    title: "GitHub Integration",
+    description: "One-click auth with GitHub. Your repos, your projects, your story.",
+  },
+];
+
+const howItWorks = [
+  {
+    step: "01",
+    title: "Connect Your Account",
+    description: "Authenticate with GitHub or GitLab. We only need read access to your public repos.",
+  },
+  {
+    step: "02",
+    title: "Share Your Work",
+    description: "Select projects to showcase. Add context, tech stack, and what you learned.",
+  },
+  {
+    step: "03",
+    title: "Get Discovered",
+    description: "Community votes on projects. Quality work rises. Build your reputation.",
+  },
+];
+
+const benefits = [
+  {
+    title: "Portfolio That Works",
+    description: "No more static portfolio sites. Show live projects synced from your repos.",
+  },
+  {
+    title: "Real Feedback",
+    description: "Get feedback from developers who actually build. Not just likes, real insights.",
+  },
+  {
+    title: "Discover Talent",
+    description: "Hiring? Find developers based on what they've shipped, not just resumes.",
+  },
+  {
+    title: "Stay Motivated",
+    description: "Track your streak, see your progress, and stay accountable to shipping.",
+  },
+];
+---
+
+<Layout>
+  <Navbar page="about" />
+	
+  <main
+    class="relative isolate z-10 min-h-screen w-full overflow-hidden bg-[#050608] bg-fixed text-slate-100"
+    aria-labelledby="locked-in-heading"
+  >
+    <!-- Interactive Background -->
+    <InteractiveBackground client:load />
+		
+    <!-- Static Background Gradients -->
+    <div
+      class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(76,29,149,0.15),transparent_60%),radial-gradient(circle_at_90%_0%,rgba(6,182,212,0.1),transparent_55%)]"
+      aria-hidden="true"
+    ></div>
+		
+    <div
+      class="pointer-events-none absolute left-1/2 top-[-20vh] -z-10 h-[70vw] w-[70vw] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.2)_0%,rgba(14,116,144,0)_60%)] blur-[120px] opacity-50"
+      aria-hidden="true"
+    ></div>
+
+    <div class="mx-auto flex w-full max-w-6xl flex-col px-5 pb-20 pt-32 sm:px-8 lg:px-12">
+      <!-- Hero Section -->
+      <section class="mb-32 flex flex-col items-center text-center">
+        <FadeIn client:load>
+          <h1 
+            class="mb-6 max-w-4xl text-4xl leading-tight tracking-tight sm:text-5xl lg:text-5xl" 
+            id="locked-in-heading"
+          >
+            Where <span class="text-cyan-400 font-sans">builders</span> showcase their craft
+          </h1>
+        </FadeIn>
+				
+        <FadeIn delay={0.2} client:load>
+          <p class="mb-10 max-w-2xl text-lg text-slate-300 sm:text-xl">
+            A social platform for developers. Share projects, get upvoted, build your reputation. GitHub & GitLab auth only.
+          </p>
+        </FadeIn>
+				
+        <FadeIn delay={0.4} client:load>
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <a
+              href="/auth"
+                class="inline-flex items-center justify-center rounded-full border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] px-8 py-4 text-base font-semibold text-slate-200 backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90"
+            >
+              Join Us!
+            </a>
+            <a
+              href="#features"
+              class="inline-flex items-center justify-center rounded-full border border-slate-700/60 bg-slate-900/40 px-8 py-4 text-base font-semibold text-slate-200 backdrop-blur-sm transition hover:border-slate-600/60 hover:bg-slate-800/40"
+            >
+              Learn More
+            </a>
+          </div>
+        </FadeIn>
+
+        <!-- Stats -->
+                <StaggerContainer client:load className="mt-20 grid w-full max-w-3xl grid-cols-3 gap-4">
+                    {stats.map((stat) => (
+                        <StaggerItem>
+              <div class="relative rounded-2xl p-px overflow-hidden shadow-[0_0_30px_rgba(6,182,212,0.3),0_0_60px_rgba(6,182,212,0.15)]">
+                                <div class="absolute inset-0 animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0%,transparent_40%,rgba(6,182,212,0.9)_50%,transparent_60%,transparent_100%)]"></div>
+                                <div class="relative bg-slate-900/90 rounded-2xl">
+                                    <StatCard stat={stat} />
+                                </div>
+                            </div>
+                        </StaggerItem>
+                    ))}
+                </StaggerContainer>
+      </section>
+
+      <!-- Features Section -->
+      <section id="features" class="mb-32">
+        <FadeIn client:load>
+          <div class="mb-12 text-center">
+            <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">Built for builders</h2>
+            <p class="mx-auto max-w-2xl text-slate-400">
+              Focus on what matters. Showcase your work, discover great projects, and connect with developers who ship.
+            </p>
+          </div>
+        </FadeIn>
+				
+        <StaggerContainer client:load className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
+            <StaggerItem>
+              <FeatureCard title={feature.title} description={feature.description} />
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </section>
+
+      <!-- How It Works Section -->
+      <section class="mb-32">
+        <FadeIn client:load>
+          <div class="mb-16 text-center">
+            <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">How it works</h2>
+            <p class="mx-auto max-w-2xl text-slate-400">
+              Get started in minutes. No complicated setup, just connect and ship.
+            </p>
+          </div>
+        </FadeIn>
+
+        <StaggerContainer client:load className="grid gap-8 md:grid-cols-3">
+          {howItWorks.map((item) => (
+            <StaggerItem className="relative">
+              <div class="flex flex-col items-center text-center">
+                <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-500/30 bg-cyan-500/10 text-2xl font-bold text-cyan-400">
+                  {item.step}
+                </div>
+                <h3 class="mb-3 text-xl font-semibold text-slate-100">{item.title}</h3>
+                <p class="text-slate-400">{item.description}</p>
+              </div>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </section>
+
+      <!-- Benefits Section -->
+      <section class="mb-32">
+        <FadeIn client:load>
+          <div class="mb-12 text-center">
+            <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">Why LockedIn?</h2>
+            <p class="mx-auto max-w-2xl text-slate-400">
+              More than just a portfolio. A platform built for developers who actually ship.
+            </p>
+          </div>
+        </FadeIn>
+
+        <StaggerContainer client:load className="grid gap-6 sm:grid-cols-2">
+          {benefits.map((benefit) => (
+            <StaggerItem>
+              <div class="rounded-2xl border border-slate-800/50 bg-slate-900/30 p-6 backdrop-blur-sm transition-all hover:border-slate-700/60 hover:bg-slate-800/40">
+                <h3 class="mb-3 text-lg font-semibold text-slate-100">{benefit.title}</h3>
+                <p class="text-sm text-slate-400">{benefit.description}</p>
+              </div>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </section>
+
+      <!-- Social Proof Section -->
+      <FadeIn client:load>
+        <section class="mb-32">
+          <div class="rounded-3xl border border-slate-800/50 bg-slate-900/30 p-8 backdrop-blur-sm sm:p-12">
+            <div class="text-center">
+              <p class="mb-6 text-2xl font-semibold italic text-slate-300 sm:text-3xl">
+                "Finally, a platform that gets it. No fluff, just projects and people who build."
+              </p>
+              <div class="flex items-center justify-center gap-3">
+                <div class="h-12 w-12 rounded-full bg-linear-to-br from-cyan-400 to-pink-500"></div>
+                <div class="text-left">
+                  <p class="font-semibold text-slate-200">Alex Chen</p>
+                  <p class="text-sm text-slate-400">Full-Stack Developer</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </FadeIn>
+
+      <!-- CTA Section -->
+      <ScaleIn client:load>
+        <section id="community" class="mb-20 rounded-3xl border border-slate-800/50 bg-slate-900/30 p-12 text-center backdrop-blur-sm sm:p-16">
+          <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">
+            Ready to ship?
+          </h2>
+          <p class="mb-8 text-lg text-slate-300">
+            Join the community of builders making things happen.
+          </p>
+          <a
+            href="/auth"
+            class="inline-flex items-center justify-center rounded-full border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] px-8 py-4 text-base font-semibold text-slate-200 backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90"
+          >
+            Get Started
+          </a>
+        </section>
+      </ScaleIn>
+
+      <!-- Footer -->
+      <footer class="border-t border-slate-800/30 pt-10 text-center">
+        <div class="mb-6 flex items-center justify-center gap-3">
+          <span class="h-2 w-2 rounded-full bg-linear-to-br from-cyan-400 to-pink-500"></span>
+          <span class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-200">LockedIn</span>
+        </div>
+        <p class="mb-6 text-sm text-slate-400">For builders who ship.</p>
+                <nav class="flex flex-wrap justify-center gap-6 text-sm text-slate-400" aria-label="Footer">
+                    <a class="transition-colors hover:text-slate-200 cursor-pointer" href="https://github.com/Heisen47" target="_blank" rel="noopener noreferrer">GitHub</a>
+                    <a class="transition-colors hover:text-slate-200 cursor-pointer" href="https://x.com/iWriteCode__" target="_blank" rel="noopener noreferrer">Twitter</a>
+                    <a class="transition-colors hover:text-slate-200 cursor-pointer" href="https://www.linkedin.com/in/saptarshi-chakraborty-3031999march/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                </nav>
+      </footer>
+    </div>
+  </main>
+</Layout>
