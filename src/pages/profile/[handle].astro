@@ -1,0 +1,199 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
+import ProjectStack from "../../components/ProjectStack";
+import EditProfileButton from "../../components/EditProfileButton";
+import { FadeIn, StaggerContainer, StaggerItem } from "../../components/Animations";
+import type { Project } from "../../components/ProjectStack";
+
+// Pre-generate dynamic profile pages for static build
+export function getStaticPaths() {
+  return [
+    { params: { handle: "alexcodes" } },
+    { params: { handle: "saramalik" } },
+  ];
+}
+
+const { params } = Astro;
+const handle = params.handle ?? "alexcodes";
+
+// Demo profile data (to be replaced by real data fetching later)
+const profile = {
+  name: handle === "alexcodes" ? "Alex Chen" : handle,
+  handle,
+  avatarUrl: "", 
+  bio: "Full-stack dev. I ship collaborative tools and edge-powered services.",
+  email: "alex@example.com",
+  github: "https://github.com/alexcodes",
+  linkedin: "https://www.linkedin.com/in/alexc",
+  website: "https://alex.dev",
+  tags: ["React", "TypeScript", "CRDT", "Edge", "Postgres"],
+  stats: {
+    projects: 12,
+    followers: 842,
+    following: 187,
+    totalStars: 3560,
+  },
+};
+
+const projects: Project[] = [
+  {
+    id: "p1",
+    title: "Realtime Kanban",
+    description: "A collaborative Kanban with CRDT sync and offline support.",
+    tags: ["React", "CRDT", "WebSocket"],
+    status: "live",
+    score: 124,
+    durationDays: 45,
+    stars: 512,
+    forks: 64,
+    createdAt: "2025-10-01T14:35:00Z",
+    comments: [],
+  },
+  {
+    id: "p2",
+    title: "Edge Vector Search",
+    description: "Cloudflare Workers + HNSW for blazing vector search near users.",
+    tags: ["Cloudflare", "HNSW", "TypeScript"],
+    status: "building",
+    score: 88,
+    durationDays: 30,
+    stars: 120,
+    forks: 20,
+    createdAt: "2025-10-10T09:12:00Z",
+    comments: [],
+  },
+  {
+    id: "p3",
+    title: "AI Note Weaving",
+    description: "Semantic backlinks that auto-organize notes into living maps.",
+    tags: ["LLM", "Embeddings", "UX"],
+    status: "live",
+    score: 203,
+    durationDays: 62,
+    stars: 1240,
+    forks: 150,
+    createdAt: "2025-10-20T18:05:00Z",
+    comments: [],
+  },
+];
+---
+
+<Layout>
+  <Navbar loggedIn={true} page="profile" />
+
+  <main class="relative min-h-screen w-full bg-[#050608] text-slate-100">
+  <div class="mx-auto w-full max-w-6xl px-5 pb-24 pt-28 sm:px-8 lg:px-12" data-profile-handle={handle}>
+      <!-- Profile Header -->
+      <header class="mb-10">
+        <FadeIn client:load>
+          <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-4">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt={`${profile.name} avatar`} class="h-16 w-16 rounded-full border border-slate-800/60 object-cover" />
+              ) : (
+                <div class="h-16 w-16 rounded-full border border-slate-800/60 bg-linear-to-br from-cyan-500/20 to-fuchsia-500/20" />
+              )}
+              <div>
+                <h1 class="text-2xl font-bold sm:text-3xl">{profile.name}</h1>
+                <p class="text-slate-400">@{profile.handle}</p>
+                <p id="profile-bio" class="mt-2 max-w-2xl text-sm text-slate-300">{profile.bio}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <a id="profile-email" href={`mailto:${profile.email}`} class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">Email</a>
+              <a href={profile.github} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">GitHub</a>
+              <a href={profile.linkedin} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">LinkedIn</a>
+              <a id="profile-website" href={profile.website} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">Website</a>
+              <EditProfileButton
+                client:load
+                handle={profile.handle}
+                initialEmail={profile.email}
+                initialWebsite={profile.website}
+                initialBio={profile.bio}
+                className="rounded-xl border border-indigo-500/30 bg-[linear-gradient(in_oklab,to_right,#6EE7F9_0%,#7C3AED_100%)] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+              />
+            </div>
+          </div>
+        </FadeIn>
+      </header>
+
+      <!-- Quick Stats -->
+      <section class="mb-10">
+        <StaggerContainer client:load className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <StaggerItem>
+            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
+              <p class="text-xs uppercase tracking-wide text-slate-400">Projects</p>
+              <p class="mt-1 text-xl font-semibold text-slate-100">{profile.stats.projects}</p>
+            </div>
+          </StaggerItem>
+          <StaggerItem>
+            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
+              <p class="text-xs uppercase tracking-wide text-slate-400">Followers</p>
+              <p class="mt-1 text-xl font-semibold text-slate-100">{profile.stats.followers}</p>
+            </div>
+          </StaggerItem>
+          <StaggerItem>
+            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
+              <p class="text-xs uppercase tracking-wide text-slate-400">Following</p>
+              <p class="mt-1 text-xl font-semibold text-slate-100">{profile.stats.following}</p>
+            </div>
+          </StaggerItem>
+          <StaggerItem>
+            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
+              <p class="text-xs uppercase tracking-wide text-slate-400">Total Stars</p>
+              <p class="mt-1 text-xl font-semibold text-slate-100">{profile.stats.totalStars}</p>
+            </div>
+          </StaggerItem>
+        </StaggerContainer>
+      </section>
+
+      <!-- Tech Stack Tags -->
+      <section class="mb-12">
+        <FadeIn client:load>
+          <div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6">
+            <h2 class="mb-3 text-lg font-semibold text-slate-100">Tech Stack</h2>
+            <div class="flex flex-wrap gap-2">
+              {profile.tags.map((t) => (
+                <span class="inline-flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/40 px-2.5 py-1 text-xs text-slate-300">#{t}</span>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
+      </section>
+
+      <!-- Projects Stack -->
+      <section>
+        <div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6 backdrop-blur-xl">
+          <ProjectStack client:load user={{ name: profile.name, handle: profile.handle }} projects={projects} showFollow={false} />
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const root = document.querySelector('[data-profile-handle]');
+    const profileHandle = (root && (root as HTMLElement).getAttribute('data-profile-handle')) || '';
+    const get = (k: string) => {
+      try { return localStorage.getItem(`profile:${profileHandle}:${k}`); } catch { return null; }
+    };
+    const apply = () => {
+      const bioEl = document.getElementById('profile-bio');
+      const emailEl = document.getElementById('profile-email');
+      const websiteEl = document.getElementById('profile-website');
+      const bio = get('bio');
+      const email = get('email');
+      const website = get('website');
+      if (bioEl && bio) bioEl.textContent = bio;
+      if (emailEl && email) emailEl.setAttribute('href', `mailto:${email}`);
+      if (websiteEl && website) websiteEl.setAttribute('href', website);
+    };
+    if (typeof window !== 'undefined') {
+      apply();
+      window.addEventListener('profile:updated', (e: any) => {
+        if (!e.detail || e.detail.handle !== profileHandle) return;
+        apply();
+      });
+    }
+  </script>
+</Layout>
