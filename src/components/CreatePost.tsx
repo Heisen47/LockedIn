@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import TechStackInput from "./TechStackInput";
 
 const isValidGitHubUrl = (url: string) => {
   try {
@@ -26,7 +27,6 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState("");
   const [status, setStatus] = useState<"live" | "building">("building");
-  const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [liveUrl, setLiveUrl] = useState("");
 
@@ -35,22 +35,6 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
     () => (status === "live" && liveUrl ? isValidHttpUrl(liveUrl) : true),
     [status, liveUrl]
   );
-
-  const addTag = () => {
-    const raw = tagInput.trim();
-    if (!raw) return;
-    const cleaned = raw
-      .replace(/^#+/, "")
-      .replace(/[,\s]+/g, " ")
-      .split(" ")
-      .map((t) => t.trim())
-      .filter(Boolean);
-    const next = Array.from(new Set([...tags, ...cleaned]));
-    setTags(next);
-    setTagInput("");
-  };
-
-  const removeTag = (t: string) => setTags((prev) => prev.filter((x) => x !== t));
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +49,6 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
     setLink("");
     setStatus("building");
     setTags([]);
-    setTagInput("");
     setLiveUrl("");
   };
 
@@ -191,54 +174,13 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-300">Tech Stack Tags</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="#react #typescript #edge"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addTag();
-                          }
-                        }}
-                        className="flex-1 rounded-xl border border-slate-700/60 bg-slate-950/60 px-3 py-2 text-slate-200 placeholder:text-slate-500 outline-none focus:border-slate-600/60"
-                      />
-                      <button
-                        type="button"
-                        onClick={addTag}
-                        className="rounded-xl border border-slate-700/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-200 hover:border-slate-600/60"
-                      >
-                        Add
-                      </button>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <AnimatePresence initial={false}>
-                        {tags.map((t) => (
-                          <motion.span
-                            key={t}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="group inline-flex items-center gap-1 rounded-full border border-slate-700/60 bg-slate-900/40 px-2.5 py-1 text-xs text-slate-300"
-                          >
-                            #{t}
-                            <button
-                              type="button"
-                              onClick={() => removeTag(t)}
-                              className="rounded-full border border-transparent px-1 text-slate-400 hover:border-slate-600/60 hover:text-slate-200"
-                              aria-label={`Remove ${t}`}
-                            >
-                              ×
-                            </button>
-                          </motion.span>
-                        ))}
-                      </AnimatePresence>
-                    </div>
-                  </div>
+                  <TechStackInput
+                    tags={tags}
+                    onTagsChange={setTags}
+                    maxTags={10}
+                    placeholder="Type to search tech stack..."
+                    label="Tech Stack Tags"
+                  />
 
                   <div className="mt-6 flex items-center justify-end gap-3">
                     <button

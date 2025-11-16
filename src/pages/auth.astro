@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
+import TechStackInput from "../components/TechStackInput";
 ---
 
 <Layout>
@@ -126,30 +127,15 @@ import Navbar from "../components/Navbar.astro";
 										<span id="bio-counter" class="absolute right-2 bottom-2 text-[10px] text-slate-500">0/50</span>
 									</div>
 								</div>
-								<div class="relative lg:col-span-2">
-									<label for="signup-techstack" class="block text-xs font-medium text-slate-400 mb-1">
-										Tech Stack <span class="text-slate-500">(max 5)</span>
-									</label>
-									<div class="relative">
-										<input
-											type="text"
-											id="signup-techstack"
-											placeholder="Type to search (e.g., React, Python)..."
-											autocomplete="off"
-											class="w-full rounded-lg border border-slate-700/60 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-600/60 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-										/>
-										<!-- Autocomplete Dropdown -->
-										<div
-											id="techstack-dropdown"
-											class="absolute z-50 mt-1 hidden w-full max-h-48 overflow-y-auto rounded-lg border border-slate-700/60 bg-slate-900/95 backdrop-blur-sm shadow-xl"
-										>
-											<!-- Populated dynamically -->
-										</div>
-									</div>
-									<!-- Selected Tags -->
-									<div id="selected-tags" class="mt-2 flex flex-wrap gap-1.5">
-										<!-- Tags appear here -->
-									</div>
+								<div class="relative lg:col-span-2" id="techstack-container">
+									<TechStackInput
+										client:load
+										tags={[]}
+										onTagsChange={(tags) => {}}
+										maxTags={5}
+										placeholder="Type to search tech stack..."
+										label="Tech Stack"
+									/>
 								</div>
 								<button
 									type="submit"
@@ -299,118 +285,16 @@ import Navbar from "../components/Navbar.astro";
 		}
 	});
 
-	// Tech Stack Autocomplete
-	const techStacks = [
-		'React', 'Vue', 'Angular', 'Svelte', 'Next.js', 'Nuxt.js', 'Gatsby',
-		'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin',
-		'Node.js', 'Express', 'Django', 'Flask', 'FastAPI', 'Spring Boot', 'ASP.NET', 'Ruby on Rails',
-		'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'SQLite', 'Cassandra', 'DynamoDB',
-		'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP', 'Terraform', 'Jenkins', 'GitHub Actions',
-		'GraphQL', 'REST API', 'gRPC', 'WebSocket',
-		'TailwindCSS', 'Bootstrap', 'Material-UI', 'Chakra UI', 'Styled Components',
-		'Git', 'Linux', 'Bash', 'PowerShell',
-		'Jest', 'Pytest', 'Mocha', 'Cypress', 'Selenium',
-		'TensorFlow', 'PyTorch', 'scikit-learn', 'Pandas', 'NumPy'
-	];
-
-	let selectedTags: string[] = [];
-	const maxTags = 5;
-
-	const techStackInput = document.getElementById('signup-techstack') as HTMLInputElement;
-	const dropdown = document.getElementById('techstack-dropdown');
-	const selectedTagsContainer = document.getElementById('selected-tags');
-
-	function renderSelectedTags() {
-		if (!selectedTagsContainer) return;
-		selectedTagsContainer.innerHTML = selectedTags.map(tag => `
-			<span class="inline-flex items-center gap-1 rounded-md bg-cyan-500/10 px-2 py-1 text-xs font-medium text-cyan-400 border border-cyan-500/20">
-				${tag}
-				<button type="button" class="remove-tag hover:text-cyan-300" data-tag="${tag}">
-					<svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-				</button>
-			</span>
-		`).join('');
-
-		// Add event listeners to remove buttons
-		selectedTagsContainer.querySelectorAll('.remove-tag').forEach(btn => {
-			btn.addEventListener('click', (e) => {
-				const tag = (e.currentTarget as HTMLElement).dataset.tag;
-				if (tag) {
-					selectedTags = selectedTags.filter(t => t !== tag);
-					renderSelectedTags();
-				}
-			});
-		});
+	// Tech stack state management
+	let techStackTags: string[] = [];
+	
+	// Listen for custom events from TechStackInput component
+	const techStackContainer = document.getElementById('techstack-container');
+	if (techStackContainer) {
+		techStackContainer.addEventListener('techstack-change', ((e: CustomEvent) => {
+			techStackTags = e.detail.tags;
+		}) as EventListener);
 	}
-
-	function showDropdown(filteredTechs: string[]) {
-		if (!dropdown || filteredTechs.length === 0 || selectedTags.length >= maxTags) {
-			hideDropdown();
-			return;
-		}
-
-		dropdown.innerHTML = filteredTechs.map(tech => `
-			<button
-				type="button"
-				class="tech-option w-full px-3 py-2 text-left text-sm text-slate-100 hover:bg-slate-800/60 transition-colors"
-				data-tech="${tech}"
-			>
-				${tech}
-			</button>
-		`).join('');
-
-		dropdown.classList.remove('hidden');
-
-		// Add click handlers
-		dropdown.querySelectorAll('.tech-option').forEach(btn => {
-			btn.addEventListener('click', (e) => {
-				const tech = (e.currentTarget as HTMLElement).dataset.tech;
-				if (tech && !selectedTags.includes(tech) && selectedTags.length < maxTags) {
-					selectedTags.push(tech);
-					renderSelectedTags();
-					if (techStackInput) techStackInput.value = '';
-					hideDropdown();
-				}
-			});
-		});
-	}
-
-	function hideDropdown() {
-		dropdown?.classList.add('hidden');
-	}
-
-	techStackInput?.addEventListener('input', (e) => {
-		const value = (e.target as HTMLInputElement).value.toLowerCase().trim();
-		if (value === '' || selectedTags.length >= maxTags) {
-			hideDropdown();
-			return;
-		}
-
-		const filtered = techStacks.filter(tech => 
-			tech.toLowerCase().includes(value) && !selectedTags.includes(tech)
-		).slice(0, 10);
-
-		showDropdown(filtered);
-	});
-
-	techStackInput?.addEventListener('focus', (e) => {
-		const value = (e.target as HTMLInputElement).value.toLowerCase().trim();
-		if (selectedTags.length < maxTags) {
-			const filtered = value === '' 
-				? techStacks.filter(tech => !selectedTags.includes(tech)).slice(0, 10)
-				: techStacks.filter(tech => tech.toLowerCase().includes(value) && !selectedTags.includes(tech)).slice(0, 10);
-			showDropdown(filtered);
-		}
-	});
-
-	// Close dropdown when clicking outside
-	document.addEventListener('click', (e) => {
-		if (!techStackInput?.contains(e.target as Node) && !dropdown?.contains(e.target as Node)) {
-			hideDropdown();
-		}
-	});
 
 	// Form submission (demo)
 	document.querySelector('#form-signin form')?.addEventListener('submit', (e) => {
@@ -423,7 +307,7 @@ import Navbar from "../components/Navbar.astro";
 		const username = (document.getElementById('signup-username') as HTMLInputElement)?.value;
 		const email = (document.getElementById('signup-email') as HTMLInputElement)?.value;
 		const bio = (document.getElementById('signup-bio') as HTMLTextAreaElement)?.value;
-		alert(`Sign up demo:\nUsername: ${username}\nEmail: ${email}\nBio: ${bio}\nTech Stack: ${selectedTags.join(', ')}`);
+		alert(`Sign up demo:\nUsername: ${username}\nEmail: ${email}\nBio: ${bio}\nTech Stack: ${techStackTags.join(', ')}`);
 	});
 </script>
 
