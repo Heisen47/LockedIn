@@ -351,21 +351,24 @@ import TechStackInput from "../components/TechStackInput";
 			const username = (document.getElementById('signup-username') as HTMLInputElement)?.value;
 			const email = (document.getElementById('signup-email') as HTMLInputElement)?.value;
 			const password = (document.getElementById('signup-password') as HTMLInputElement)?.value;
-			const handle = (document.getElementById('signup-handle') as HTMLInputElement)?.value;
 
 			// Call register API
 			const response = await api.register({
 				username: username,
 				email: email,
 				password: password,
-				handle: handle || username, // Use username as handle if not provided
+				handle: username, // Use username as handle since input was removed
+				techStack: techStackTags,
 			});
 
 			console.log('Registration successful:', response.user);
-
-		} catch (error) {
+			
+			// Redirect to feed
+			window.location.href = '/';
+		} catch (error: any) {
 			console.error('Registration failed:', error);
-			alert(error instanceof Error ? error.message : 'Registration failed. Please try again.');
+			const errorMessage = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
+			alert(errorMessage);
 			
 			if (submitBtn) {
 				submitBtn.disabled = false;

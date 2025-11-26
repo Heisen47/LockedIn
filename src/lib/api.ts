@@ -8,6 +8,7 @@ interface RegisterData {
   email: string;
   password: string;
   handle?: string;
+  techStack?: string[];
 }
 
 interface LoginData {
