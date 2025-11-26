@@ -160,8 +160,12 @@ export default function TechStackInput({
 
   const addTag = (tag: string) => {
     setInput("");
+    setFilteredOptions([]);
     setShowDropdown(false);
+    setHighlightedIndex(0);
     inputRef.current?.focus();
+
+    if (!tag) return;
 
     if (localTags.length >= maxTags) return;
     if (!localTags.includes(tag)) {

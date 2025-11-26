@@ -98,7 +98,6 @@ class ApiClient {
     localStorage.removeItem('refreshToken');
   }
 
-  // Auth endpoints
   async register(data: RegisterData): Promise<AuthResponse> {
     const response = await this.axiosInstance.post<AuthResponse>('/auth/register', data);
     
