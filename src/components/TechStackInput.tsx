@@ -113,6 +113,7 @@ export default function TechStackInput({
   label = "Tech Stack Tags",
   showLabel = true,
 }: TechStackInputProps) {
+  const [localTags, setLocalTags] = useState<string[]>(tags);
   const [input, setInput] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
@@ -121,11 +122,15 @@ export default function TechStackInput({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setLocalTags(tags);
+  }, [tags]);
+
+  useEffect(() => {
     if (input.trim()) {
       const filtered = TECH_STACK_OPTIONS.filter(
         (tech) =>
           tech.toLowerCase().includes(input.toLowerCase()) &&
-          !tags.includes(tech)
+          !localTags.includes(tech)
       ).slice(0, 10);
       setFilteredOptions(filtered);
       setShowDropdown(filtered.length > 0);
@@ -135,7 +140,7 @@ export default function TechStackInput({
       setShowDropdown(false);
       setHighlightedIndex(0);
     }
-  }, [input, tags]);
+  }, [input, localTags]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -154,11 +159,15 @@ export default function TechStackInput({
   }, []);
 
   const addTag = (tag: string) => {
-    if (tags.length >= maxTags) return;
-    if (!tags.includes(tag)) {
-      const newTags = [...tags, tag];
+    setInput("");
+    setShowDropdown(false);
+    inputRef.current?.focus();
+
+    if (localTags.length >= maxTags) return;
+    if (!localTags.includes(tag)) {
+      const newTags = [...localTags, tag];
+      setLocalTags(newTags);
       onTagsChange(newTags);
-      // Dispatch custom event for non-React contexts (like Astro)
       const container = document.getElementById('techstack-container');
       if (container) {
         const event = new CustomEvent('techstack-change', { 
@@ -168,13 +177,11 @@ export default function TechStackInput({
         container.dispatchEvent(event);
       }
     }
-    setInput("");
-    setShowDropdown(false);
-    inputRef.current?.focus();
   };
 
   const removeTag = (tag: string) => {
-    const newTags = tags.filter((t) => t !== tag);
+    const newTags = localTags.filter((t) => t !== tag);
+    setLocalTags(newTags);
     onTagsChange(newTags);
     // Dispatch custom event for non-React contexts (like Astro)
     const container = document.getElementById('techstack-container');
@@ -199,16 +206,18 @@ export default function TechStackInput({
         setHighlightedIndex((i) => (i - 1 + filteredOptions.length) % filteredOptions.length);
       }
     } else if (e.key === 'Tab') {
-      if (filteredOptions.length > 0) {
+      if (filteredOptions.length > 0 && showDropdown) {
         e.preventDefault();
-        setInput(filteredOptions[highlightedIndex]);
-        setShowDropdown(false);
+        addTag(filteredOptions[highlightedIndex]);
       }
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const trimmed = input.trim();
-      if (!trimmed) return;
-      addTag(trimmed);
+      if (filteredOptions.length > 0 && showDropdown) {
+        addTag(filteredOptions[highlightedIndex]);
+      } else {
+        const trimmed = input.trim();
+        if (trimmed) addTag(trimmed);
+      }
     } else if (e.key === 'Escape') {
       setShowDropdown(false);
     }
@@ -219,9 +228,9 @@ export default function TechStackInput({
       {showLabel && (
         <label className="mb-1 block text-sm font-medium text-slate-300">
           {label}
-          {maxTags && tags.length > 0 && (
+          {maxTags && localTags.length > 0 && (
             <span className="ml-2 text-xs text-slate-500">
-              ({tags.length}/{maxTags})
+              ({localTags.length}/{maxTags})
             </span>
           )}
         </label>
@@ -233,11 +242,8 @@ export default function TechStackInput({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (filteredOptions.length > 0) setShowDropdown(true);
-          }}
           placeholder={placeholder}
-          disabled={tags.length >= maxTags}
+          disabled={localTags.length >= maxTags}
           className="w-full rounded-xl border border-slate-700/60 bg-slate-950/60 px-3 py-2 text-slate-200 outline-none transition placeholder:text-slate-500 focus:border-slate-600/60 disabled:cursor-not-allowed disabled:opacity-50"
         />
 
@@ -270,10 +276,10 @@ export default function TechStackInput({
         </AnimatePresence>
       </div>
 
-      {tags.length > 0 && (
+      {localTags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
           <AnimatePresence initial={false}>
-            {tags.map((tag) => (
+            {localTags.map((tag) => (
               <motion.span
                 key={tag}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -296,7 +302,7 @@ export default function TechStackInput({
         </div>
       )}
 
-      {tags.length >= maxTags && (
+      {localTags.length >= maxTags && (
         <p className="mt-2 text-xs text-slate-400">
           Maximum of {maxTags} tags reached
         </p>
