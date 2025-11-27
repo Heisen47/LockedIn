@@ -1,100 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-export const TECH_STACK_OPTIONS = [
-  "React",
-  "Vue",
-  "Angular",
-  "Svelte",
-  "Next.js",
-  "Nuxt",
-  "Astro",
-  "TypeScript",
-  "JavaScript",
-  "Python",
-  "Java",
-  "Go",
-  "Rust",
-  "C++",
-  "C#",
-  "Ruby",
-  "PHP",
-  "Swift",
-  "Kotlin",
-  "Node.js",
-  "Deno",
-  "Bun",
-  "Express",
-  "FastAPI",
-  "Django",
-  "Flask",
-  "Spring",
-  "ASP.NET",
-  "Rails",
-  "Laravel",
-  "TailwindCSS",
-  "Bootstrap",
-  "MaterialUI",
-  "ChakraUI",
-  "ShadcnUI",
-  "PostgreSQL",
-  "MySQL",
-  "MongoDB",
-  "Redis",
-  "SQLite",
-  "Supabase",
-  "Firebase",
-  "AWS",
-  "Azure",
-  "GCP",
-  "Vercel",
-  "Netlify",
-  "Docker",
-  "Kubernetes",
-  "GraphQL",
-  "REST",
-  "tRPC",
-  "Prisma",
-  "Drizzle",
-  "WebSocket",
-  "WebRTC",
-  "Three.js",
-  "WebGL",
-  "WebGPU",
-  "TensorFlow",
-  "PyTorch",
-  "OpenAI",
-  "LangChain",
-  "CRDT",
-  "IndexedDB",
-  "PWA",
-  "Electron",
-  "Tauri",
-  "Cloudflare",
-  "EdgeComputing",
-  "Serverless",
-  "Microservices",
-  "WASM",
-  "Git",
-  "GitHub",
-  "GitLab",
-  "CI/CD",
-  "Jest",
-  "Vitest",
-  "Playwright",
-  "Cypress",
-  "Terraform",
-  "Ansible",
-  "Nginx",
-  "Apache",
-  "OAuth",
-  "JWT",
-  "Stripe",
-  "Shopify",
-  "Headless CMS",
-  "Sanity",
-  "Contentful",
-];
+import { TECH_STACK_OPTIONS } from "../lib/techStackOptions";
 
 interface TechStackInputProps {
   tags: string[];
@@ -113,6 +19,15 @@ export default function TechStackInput({
   label = "Tech Stack Tags",
   showLabel = true,
 }: TechStackInputProps) {
+  console.log('🎯 TechStackInput initialized with props:', {
+    tags,
+    onTagsChange: typeof onTagsChange,
+    maxTags,
+    placeholder,
+    label,
+    showLabel
+  });
+  
   const [localTags, setLocalTags] = useState<string[]>(tags);
   const [input, setInput] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -159,6 +74,10 @@ export default function TechStackInput({
   }, []);
 
   const addTag = (tag: string) => {
+    console.log('🏷️  addTag called with:', tag);
+    console.log('🏷️  onTagsChange type:', typeof onTagsChange);
+    console.log('🏷️  onTagsChange value:', onTagsChange);
+    
     setInput("");
     setFilteredOptions([]);
     setShowDropdown(false);
@@ -170,10 +89,21 @@ export default function TechStackInput({
     if (localTags.length >= maxTags) return;
     if (!localTags.includes(tag)) {
       const newTags = [...localTags, tag];
+      console.log('🏷️  New tags array:', newTags);
       setLocalTags(newTags);
-      onTagsChange(newTags);
+      
+      // Call onTagsChange if it's a function
+      if (typeof onTagsChange === 'function') {
+        console.log('🏷️  Calling onTagsChange with:', newTags);
+        onTagsChange(newTags);
+      } else {
+        console.error('❌ onTagsChange is not a function!', onTagsChange);
+      }
+      
+      // Dispatch custom event for non-React contexts (like Astro)
       const container = document.getElementById('techstack-container');
       if (container) {
+        console.log('🏷️  Dispatching custom event');
         const event = new CustomEvent('techstack-change', { 
           detail: { tags: newTags },
           bubbles: true 
@@ -186,7 +116,12 @@ export default function TechStackInput({
   const removeTag = (tag: string) => {
     const newTags = localTags.filter((t) => t !== tag);
     setLocalTags(newTags);
-    onTagsChange(newTags);
+    
+    // Call onTagsChange if it's a function
+    if (typeof onTagsChange === 'function') {
+      onTagsChange(newTags);
+    }
+    
     // Dispatch custom event for non-React contexts (like Astro)
     const container = document.getElementById('techstack-container');
     if (container) {

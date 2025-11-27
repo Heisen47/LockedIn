@@ -7,7 +7,7 @@ interface RegisterData {
   username: string;
   email: string;
   password: string;
-  handle?: string;
+  bio?: string;
   techStack?: string[];
 }
 

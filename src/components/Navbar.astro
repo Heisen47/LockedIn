@@ -47,8 +47,8 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 				<a href="/" class={`hidden md:block text-sm font-medium transition-colors ${page === "feed" ? "text-white" : "text-slate-300 hover:text-white"}`}>Feed</a>
 				<a href="/building" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Building</a>
 				<a href="/about" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">About</a>
-				<a href="/auth" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-slate-900/40 backdrop-blur-sm hover:border-slate-600/60 transition">Submit</a>
-				<ProfileMenu client:load handle="alexcodes" />
+				<a href="/auth" id="feed-submit-btn" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-slate-900/40 backdrop-blur-sm hover:border-slate-600/60 transition">Submit</a>
+				<ProfileMenu client:load />
 			</div>
 		)}
 
@@ -57,8 +57,8 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 				<a href="/" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Feed</a>
 				<a href="/building" class="hidden md:block text-sm font-medium text-white">Building</a>
 				<a href="/about" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">About</a>
-				<a href="/auth" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Submit</a>
-				<ProfileMenu client:load handle="alexcodes" />
+				<a href="/auth" id="building-submit-btn" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Submit</a>
+				<ProfileMenu client:load />
 			</div>
 		)}
 
@@ -67,9 +67,46 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 				<a href="/" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Feed</a>
 				<a href="/building" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Building</a>
 				<a href="/about" class="hidden md:block text-sm font-medium text-white">About</a>
-				<a href="/auth" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Submit</a>
-				<ProfileMenu client:load handle="alexcodes" />
+				<a href="/auth" id="about-submit-btn" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Submit</a>
+				<ProfileMenu client:load />
 			</div>
 		)}
 	</div>
 </nav>
+
+<script>
+	import { api } from '../lib/api';
+
+	async function checkAuthAndUpdateButtons() {
+		try {
+			const result = await api.validate();
+			
+			if (result.valid && result.user) {
+				// Update all submit buttons to show user info
+				const submitButtons = [
+					document.getElementById('feed-submit-btn'),
+					document.getElementById('building-submit-btn'),
+					document.getElementById('about-submit-btn')
+				];
+
+				const user = result.user;
+				submitButtons.forEach(btn => {
+					if (btn) {
+						// Replace "Submit" text with user's handle
+						btn.textContent = `@${user.handle}`;
+						// Change href to user's profile
+						btn.setAttribute('href', `/profile/${user.handle}`);
+						// Update styling to show it's a profile link
+						btn.classList.remove('bg-slate-900/40');
+						btn.classList.add('bg-cyan-500/10', 'border-cyan-500/60', 'text-cyan-300');
+					}
+				});
+			}
+		} catch (error) {
+			console.error('Auth check failed:', error);
+		}
+	}
+
+	// Run on page load
+	checkAuthAndUpdateButtons();
+</script>
