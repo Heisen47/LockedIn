@@ -75,6 +75,73 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 </nav>
 
 <script>
+	// Modal utility function
+	function showModal(message: string, onClose?: () => void) {
+		// Create modal backdrop
+		const backdrop = document.createElement('div');
+		backdrop.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm';
+		backdrop.id = 'auth-modal';
+		
+		// Create modal content
+		backdrop.innerHTML = `
+			<div class="mx-4 w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-900/95 p-6 shadow-2xl backdrop-blur-xl">
+				<div class="mb-4 flex items-center justify-center">
+					<div class="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/10 border border-cyan-500/30">
+						<svg class="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						</svg>
+					</div>
+				</div>
+				<p class="mb-6 text-center text-sm text-slate-200">${message}</p>
+				<button id="modal-close-btn" class="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-fuchsia-500 px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">
+					OK
+				</button>
+			</div>
+		`;
+		
+		document.body.appendChild(backdrop);
+		
+		// Close modal on button click
+		const closeBtn = document.getElementById('modal-close-btn');
+		closeBtn?.addEventListener('click', () => {
+			backdrop.remove();
+			if (onClose) onClose();
+		});
+		
+		// Close modal on backdrop click
+		backdrop.addEventListener('click', (e) => {
+			if (e.target === backdrop) {
+				backdrop.remove();
+				if (onClose) onClose();
+			}
+		});
+		
+		// Close on Escape key
+		const handleEscape = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				backdrop.remove();
+				if (onClose) onClose();
+				document.removeEventListener('keydown', handleEscape);
+			}
+		};
+		document.addEventListener('keydown', handleEscape);
+	}
+
+	// Check for protected routes
+	function checkProtectedRoute() {
+		const protectedRoutes = ['/settings', '/profile'];
+		const currentPath = window.location.pathname;
+		const token = sessionStorage.getItem('authToken');
+		
+		const isProtected = protectedRoutes.some(route => currentPath.startsWith(route));
+		
+		if (isProtected && !token) {
+			showModal('Please login to access this page', () => {
+				window.location.href = '/auth';
+			});
+		}
+	}
+
 	function checkAuthAndUpdateButtons() {
 		// Check if we have a token and user info in session storage
 		const token = sessionStorage.getItem('authToken');
@@ -138,14 +205,36 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 				
 				// Add logout functionality
 				const logoutBtn = document.getElementById(`logout-btn-${btn.id}`);
-				logoutBtn?.addEventListener('click', () => {
-					sessionStorage.clear();
-					window.location.href = '/';
+				logoutBtn?.addEventListener('click', async () => {
+					try {
+						const token = sessionStorage.getItem('authToken');
+						const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/auth/logout`, {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': `Bearer ${token}`
+							}
+						});
+						const data = await response.json();
+						const message = data.message || 'You have been logged out successfully';
+						
+						sessionStorage.clear();
+						showModal(message, () => {
+							window.location.href = '/';
+						});
+					} catch (error) {
+						console.error('Logout API call failed:', error);
+						sessionStorage.clear();
+						showModal('You have been logged out', () => {
+							window.location.href = '/';
+						});
+					}
 				});
 			}
 		});
 	}
 
 	// Run on page load
+	checkProtectedRoute();
 	checkAuthAndUpdateButtons();
 </script>
