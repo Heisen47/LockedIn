@@ -314,13 +314,14 @@ import TechStackInput from "../components/TechStackInput";
 			const username = (document.getElementById('signin-username') as HTMLInputElement)?.value;
 			const password = (document.getElementById('signin-password') as HTMLInputElement)?.value;
 
+			console.log('Attempting login with:', { username, password: '***' });
+
 			// Call login API
 			const response = await api.login({
-				email: username, // Assuming username field accepts email
+				username: username,
 				password: password,
 			});
 
-			console.log('Login successful:', response.user);
 			
 			// Redirect to feed
 			window.location.href = '/';
@@ -361,8 +362,6 @@ import TechStackInput from "../components/TechStackInput";
 				bio: bio,
 				techStack: techStackTags,
 			});
-
-			console.log('Registration successful:', response.user);
 			
 			// Redirect to feed
 			window.location.href = '/';

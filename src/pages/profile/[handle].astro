@@ -6,14 +6,6 @@ import EditProfileButton from "../../components/EditProfileButton";
 import { FadeIn, StaggerContainer, StaggerItem } from "../../components/Animations";
 import type { Project } from "../../components/ProjectStack";
 
-// Pre-generate dynamic profile pages for static build
-export function getStaticPaths() {
-  return [
-    { params: { handle: "alexcodes" } },
-    { params: { handle: "saramalik" } },
-  ];
-}
-
 const { params } = Astro;
 const handle = params.handle ?? "alexcodes";
 

@@ -11,7 +11,7 @@ export interface User {
 export async function isAuthenticated(): Promise<boolean> {
   if (typeof window === 'undefined') return false;
   
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
   if (!token) return false;
 
   const result = await api.validate();

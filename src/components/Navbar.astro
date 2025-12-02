@@ -75,36 +75,75 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 </nav>
 
 <script>
-	import { api } from '../lib/api';
+	function checkAuthAndUpdateButtons() {
+		// Check if we have a token and user info in session storage
+		const token = sessionStorage.getItem('authToken');
+		const username = sessionStorage.getItem('username');
+		
+		if (!token || !username) {
+			console.log('No auth token or username found');
+			return;
+		}
 
-	async function checkAuthAndUpdateButtons() {
-		try {
-			const result = await api.validate();
-			
-			if (result.valid && result.user) {
-				// Update all submit buttons to show user info
-				const submitButtons = [
-					document.getElementById('feed-submit-btn'),
-					document.getElementById('building-submit-btn'),
-					document.getElementById('about-submit-btn')
-				];
+		console.log('✅ User is logged in:', username);
 
-				const user = result.user;
-				submitButtons.forEach(btn => {
-					if (btn) {
-						// Replace "Submit" text with user's handle
-						btn.textContent = `@${user.handle}`;
-						// Change href to user's profile
-						btn.setAttribute('href', `/profile/${user.handle}`);
-						// Update styling to show it's a profile link
-						btn.classList.remove('bg-slate-900/40');
-						btn.classList.add('bg-cyan-500/10', 'border-cyan-500/60', 'text-cyan-300');
+		// Update all submit buttons to show user dropdown
+		const submitButtons = [
+			document.getElementById('feed-submit-btn'),
+			document.getElementById('building-submit-btn'),
+			document.getElementById('about-submit-btn')
+		];
+
+		submitButtons.forEach(btn => {
+			if (btn) {
+				// Create a wrapper div for the dropdown
+				const wrapper = document.createElement('div');
+				wrapper.className = 'relative';
+				
+				// Create the button
+				const button = document.createElement('button');
+				button.className = 'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-cyan-300 border border-cyan-500/60 bg-cyan-500/10 backdrop-blur-sm hover:border-cyan-400/60 transition';
+				button.innerHTML = `
+					<span class="h-6 w-6 rounded-full bg-gradient-to-br from-cyan-500/30 to-fuchsia-500/30"></span>
+					@${username}
+				`;
+				
+				// Create the dropdown menu
+				const dropdown = document.createElement('div');
+				dropdown.className = 'absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/90 backdrop-blur-xl shadow-xl hidden';
+				dropdown.innerHTML = `
+					<a href="/profile/${username}" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800/40">My Profile</a>
+					<a href="/settings" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800/40">Settings</a>
+					<button id="logout-btn-${btn.id}" class="block w-full px-4 py-2 text-left text-sm text-rose-300 hover:bg-rose-600/10">Log out</button>
+				`;
+				
+				// Toggle dropdown on button click
+				button.addEventListener('click', (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					dropdown.classList.toggle('hidden');
+				});
+				
+				// Close dropdown when clicking outside
+				document.addEventListener('click', (e) => {
+					if (!wrapper.contains(e.target as Node)) {
+						dropdown.classList.add('hidden');
 					}
 				});
+				
+				// Replace the original button with the wrapper
+				btn.parentNode?.replaceChild(wrapper, btn);
+				wrapper.appendChild(button);
+				wrapper.appendChild(dropdown);
+				
+				// Add logout functionality
+				const logoutBtn = document.getElementById(`logout-btn-${btn.id}`);
+				logoutBtn?.addEventListener('click', () => {
+					sessionStorage.clear();
+					window.location.href = '/';
+				});
 			}
-		} catch (error) {
-			console.error('Auth check failed:', error);
-		}
+		});
 	}
 
 	// Run on page load

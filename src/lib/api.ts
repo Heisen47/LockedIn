@@ -12,18 +12,21 @@ interface RegisterData {
 }
 
 interface LoginData {
-  email: string;
+  username: string;
   password: string;
 }
 
 interface AuthResponse {
-  token: string;
-  refreshToken: string;
-  user: {
-    id: string;
+  redirectUrl: string;
+  message: string;
+  auth: {
+    accessToken: string;
+    refreshToken: string;
+    tokenType: string;
+    userId: string;
     username: string;
     email: string;
-    handle: string;
+    role: string;
   };
 }
 
@@ -48,12 +51,18 @@ class ApiClient {
       },
     });
 
-    // Request interceptor to add auth token
+    // Request interceptor to add auth token (skip for public endpoints)
     this.axiosInstance.interceptors.request.use(
       (config) => {
-        const token = this.getAuthToken();
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+        // Skip auth header for public endpoints
+        const publicEndpoints = ['/auth/login', '/auth/register', '/auth/refresh'];
+        const isPublicEndpoint = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+        
+        if (!isPublicEndpoint) {
+          const token = this.getAuthToken();
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
         }
         return config;
       },
@@ -62,8 +71,12 @@ class ApiClient {
 
     // Response interceptor to handle errors
     this.axiosInstance.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        console.log('📥 API Response:', response.config.url, response.data);
+        return response;
+      },
       (error: AxiosError<{ message?: string }>) => {
+        console.error('❌ API Error:', error.config?.url, error.response?.status, error.response?.data);
         if (error.response?.status === 401) {
           this.clearTokens();
         }
@@ -75,35 +88,40 @@ class ApiClient {
 
   private getAuthToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('authToken');
+    return sessionStorage.getItem('authToken');
   }
 
   private setAuthToken(token: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('authToken', token);
+    sessionStorage.setItem('authToken', token);
   }
 
   private setRefreshToken(token: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('refreshToken', token);
+    sessionStorage.setItem('refreshToken', token);
   }
 
   private getRefreshToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('refreshToken');
+    return sessionStorage.getItem('refreshToken');
   }
 
   private clearTokens(): void {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('refreshToken');
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {
     const response = await this.axiosInstance.post<AuthResponse>('/auth/register', data);
     
-    this.setAuthToken(response.data.token);
-    this.setRefreshToken(response.data.refreshToken);
+    this.setAuthToken(response.data.auth.accessToken);
+    this.setRefreshToken(response.data.auth.refreshToken);
+    
+    // Store user info in sessionStorage
+    sessionStorage.setItem('userId', response.data.auth.userId);
+    sessionStorage.setItem('username', response.data.auth.username);
+    sessionStorage.setItem('email', response.data.auth.email);
     
     return response.data;
   }
@@ -111,8 +129,13 @@ class ApiClient {
   async login(data: LoginData): Promise<AuthResponse> {
     const response = await this.axiosInstance.post<AuthResponse>('/auth/login', data);
     
-    this.setAuthToken(response.data.token);
-    this.setRefreshToken(response.data.refreshToken);
+    this.setAuthToken(response.data.auth.accessToken);
+    this.setRefreshToken(response.data.auth.refreshToken);
+    
+    // Store user info in sessionStorage
+    sessionStorage.setItem('userId', response.data.auth.userId);
+    sessionStorage.setItem('username', response.data.auth.username);
+    sessionStorage.setItem('email', response.data.auth.email);
     
     return response.data;
   }
@@ -136,11 +159,32 @@ class ApiClient {
   }
 
   async validate(): Promise<ValidateResponse> {
+    const token = this.getAuthToken();
+    
     try {
+      if (!token) {
+        return { valid: false };
+      }
       const response = await this.axiosInstance.get<ValidateResponse>('/auth/validate');
       return response.data;
-    } catch (error) {
-      this.clearTokens();
+    } catch (error: any) {
+      console.error('Validate error:', error?.message || error);
+      // Fallback to sessionStorage if API fails
+      const userId = sessionStorage.getItem('userId');
+      const username = sessionStorage.getItem('username');
+      const email = sessionStorage.getItem('email');
+      
+      if (token && userId && username && email) {
+        return {
+          valid: true,
+          user: {
+            id: userId,
+            username: username,
+            email: email,
+            handle: username,
+          }
+        };
+      }
       return { valid: false };
     }
   }
