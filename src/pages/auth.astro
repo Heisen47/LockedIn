@@ -227,6 +227,8 @@ import TechStackInput from "../components/TechStackInput";
 </Layout>
 
 <script>
+	import { api } from '../lib/api';
+
 	// Tab switching
 	const signinTab = document.getElementById('tab-signin');
 	const signupTab = document.getElementById('tab-signup');
@@ -296,18 +298,83 @@ import TechStackInput from "../components/TechStackInput";
 		}) as EventListener);
 	}
 
-	// Form submission (demo)
-	document.querySelector('#form-signin form')?.addEventListener('submit', (e) => {
+	// Sign In Form submission
+	document.querySelector('#form-signin form')?.addEventListener('submit', async (e) => {
 		e.preventDefault();
-		alert('Sign in demo: would authenticate user here');
+		
+		const submitBtn = (e.target as HTMLFormElement)?.querySelector('button[type="submit"]') as HTMLButtonElement;
+		const originalText = submitBtn?.textContent || '';
+		
+		try {
+			if (submitBtn) {
+				submitBtn.disabled = true;
+				submitBtn.textContent = 'Signing in...';
+			}
+
+			const username = (document.getElementById('signin-username') as HTMLInputElement)?.value;
+			const password = (document.getElementById('signin-password') as HTMLInputElement)?.value;
+
+			console.log('Attempting login with:', { username, password: '***' });
+
+			// Call login API
+			const response = await api.login({
+				username: username,
+				password: password,
+			});
+
+			
+			// Redirect to feed
+			window.location.href = '/';
+		} catch (error) {
+			console.error('Login failed:', error);
+			alert(error instanceof Error ? error.message : 'Login failed. Please try again.');
+			
+			if (submitBtn) {
+				submitBtn.disabled = false;
+				submitBtn.textContent = originalText;
+			}
+		}
 	});
 
-	document.querySelector('#form-signup form')?.addEventListener('submit', (e) => {
+	// Sign Up Form submission
+	document.querySelector('#form-signup form')?.addEventListener('submit', async (e) => {
 		e.preventDefault();
-		const username = (document.getElementById('signup-username') as HTMLInputElement)?.value;
-		const email = (document.getElementById('signup-email') as HTMLInputElement)?.value;
-		const bio = (document.getElementById('signup-bio') as HTMLTextAreaElement)?.value;
-		alert(`Sign up demo:\nUsername: ${username}\nEmail: ${email}\nBio: ${bio}\nTech Stack: ${techStackTags.join(', ')}`);
+		
+		const submitBtn = (e.target as HTMLFormElement)?.querySelector('button[type="submit"]') as HTMLButtonElement;
+		const originalText = submitBtn?.textContent || '';
+		
+		try {
+			if (submitBtn) {
+				submitBtn.disabled = true;
+				submitBtn.textContent = 'Creating account...';
+			}
+
+			const username = (document.getElementById('signup-username') as HTMLInputElement)?.value;
+			const email = (document.getElementById('signup-email') as HTMLInputElement)?.value;
+			const password = (document.getElementById('signup-password') as HTMLInputElement)?.value;
+			const bio = (document.getElementById('signup-bio') as HTMLTextAreaElement)?.value;
+
+			// Call register API
+			const response = await api.register({
+				username: username,
+				email: email,
+				password: password,
+				bio: bio,
+				techStack: techStackTags,
+			});
+			
+			// Redirect to feed
+			window.location.href = '/';
+		} catch (error: any) {
+			console.error('Registration failed:', error);
+			const errorMessage = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
+			alert(errorMessage);
+			
+			if (submitBtn) {
+				submitBtn.disabled = false;
+				submitBtn.textContent = originalText;
+			}
+		}
 	});
 </script>
 

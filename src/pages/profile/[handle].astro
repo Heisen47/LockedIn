@@ -2,17 +2,8 @@
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
 import ProjectStack from "../../components/ProjectStack";
-import EditProfileButton from "../../components/EditProfileButton";
 import { FadeIn, StaggerContainer, StaggerItem } from "../../components/Animations";
 import type { Project } from "../../components/ProjectStack";
-
-// Pre-generate dynamic profile pages for static build
-export function getStaticPaths() {
-  return [
-    { params: { handle: "alexcodes" } },
-    { params: { handle: "saramalik" } },
-  ];
-}
 
 const { params } = Astro;
 const handle = params.handle ?? "alexcodes";
@@ -105,14 +96,6 @@ const projects: Project[] = [
               <a href={profile.github} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">GitHub</a>
               <a href={profile.linkedin} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">LinkedIn</a>
               <a id="profile-website" href={profile.website} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">Website</a>
-              <EditProfileButton
-                client:load
-                handle={profile.handle}
-                initialEmail={profile.email}
-                initialWebsite={profile.website}
-                initialBio={profile.bio}
-                className="rounded-xl border border-indigo-500/30 bg-[linear-gradient(in_oklab,to_right,#6EE7F9_0%,#7C3AED_100%)] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90"
-              />
             </div>
           </div>
         </FadeIn>
@@ -165,7 +148,41 @@ const projects: Project[] = [
       <!-- Projects Stack -->
       <section>
         <div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6 backdrop-blur-xl">
-          <ProjectStack client:load user={{ name: profile.name, handle: profile.handle }} projects={projects} showFollow={false} />
+          <!-- Tab Toggle -->
+          <div class="mb-6 flex items-center gap-2 rounded-lg border border-slate-800/50 bg-slate-950/40 p-1">
+            <button
+              type="button"
+              id="tab-posts"
+              class="profile-tab flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all bg-slate-800/60 text-slate-100"
+            >
+              Posts
+            </button>
+            <button
+              type="button"
+              id="tab-comments"
+              class="profile-tab flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all text-slate-400"
+            >
+              Comments
+            </button>
+          </div>
+
+          <!-- Posts View -->
+          <div id="view-posts">
+            <ProjectStack client:load user={{ name: profile.name, handle: profile.handle }} projects={projects} showFollow={false} />
+          </div>
+
+          <!-- Comments View -->
+          <div id="view-comments" class="hidden">
+            <div class="space-y-4">
+              <!-- Placeholder for comments - to be replaced with actual comment data -->
+              <div class="text-center py-12 text-slate-400">
+                <svg class="mx-auto mb-4 h-12 w-12 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
+                <p class="text-sm">No comments yet</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -195,5 +212,35 @@ const projects: Project[] = [
         apply();
       });
     }
+
+    // Tab switching functionality
+    const postsTab = document.getElementById('tab-posts');
+    const commentsTab = document.getElementById('tab-comments');
+    const postsView = document.getElementById('view-posts');
+    const commentsView = document.getElementById('view-comments');
+
+    function setActiveTab(tab: 'posts' | 'comments') {
+      if (tab === 'posts') {
+        postsTab?.classList.add('bg-slate-800/60', 'text-slate-100');
+        postsTab?.classList.remove('text-slate-400');
+        commentsTab?.classList.remove('bg-slate-800/60', 'text-slate-100');
+        commentsTab?.classList.add('text-slate-400');
+        postsView?.classList.remove('hidden');
+        commentsView?.classList.add('hidden');
+      } else {
+        commentsTab?.classList.add('bg-slate-800/60', 'text-slate-100');
+        commentsTab?.classList.remove('text-slate-400');
+        postsTab?.classList.remove('bg-slate-800/60', 'text-slate-100');
+        postsTab?.classList.add('text-slate-400');
+        commentsView?.classList.remove('hidden');
+        postsView?.classList.add('hidden');
+      }
+    }
+
+    postsTab?.addEventListener('click', () => setActiveTab('posts'));
+    commentsTab?.addEventListener('click', () => setActiveTab('comments'));
+
+    // Initialize with posts active
+    setActiveTab('posts');
   </script>
 </Layout>

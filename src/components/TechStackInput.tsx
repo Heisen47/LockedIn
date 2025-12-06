@@ -1,100 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-export const TECH_STACK_OPTIONS = [
-  "React",
-  "Vue",
-  "Angular",
-  "Svelte",
-  "Next.js",
-  "Nuxt",
-  "Astro",
-  "TypeScript",
-  "JavaScript",
-  "Python",
-  "Java",
-  "Go",
-  "Rust",
-  "C++",
-  "C#",
-  "Ruby",
-  "PHP",
-  "Swift",
-  "Kotlin",
-  "Node.js",
-  "Deno",
-  "Bun",
-  "Express",
-  "FastAPI",
-  "Django",
-  "Flask",
-  "Spring",
-  "ASP.NET",
-  "Rails",
-  "Laravel",
-  "TailwindCSS",
-  "Bootstrap",
-  "MaterialUI",
-  "ChakraUI",
-  "ShadcnUI",
-  "PostgreSQL",
-  "MySQL",
-  "MongoDB",
-  "Redis",
-  "SQLite",
-  "Supabase",
-  "Firebase",
-  "AWS",
-  "Azure",
-  "GCP",
-  "Vercel",
-  "Netlify",
-  "Docker",
-  "Kubernetes",
-  "GraphQL",
-  "REST",
-  "tRPC",
-  "Prisma",
-  "Drizzle",
-  "WebSocket",
-  "WebRTC",
-  "Three.js",
-  "WebGL",
-  "WebGPU",
-  "TensorFlow",
-  "PyTorch",
-  "OpenAI",
-  "LangChain",
-  "CRDT",
-  "IndexedDB",
-  "PWA",
-  "Electron",
-  "Tauri",
-  "Cloudflare",
-  "EdgeComputing",
-  "Serverless",
-  "Microservices",
-  "WASM",
-  "Git",
-  "GitHub",
-  "GitLab",
-  "CI/CD",
-  "Jest",
-  "Vitest",
-  "Playwright",
-  "Cypress",
-  "Terraform",
-  "Ansible",
-  "Nginx",
-  "Apache",
-  "OAuth",
-  "JWT",
-  "Stripe",
-  "Shopify",
-  "Headless CMS",
-  "Sanity",
-  "Contentful",
-];
+import { TECH_STACK_OPTIONS } from "../lib/techStackOptions";
 
 interface TechStackInputProps {
   tags: string[];
@@ -113,6 +19,16 @@ export default function TechStackInput({
   label = "Tech Stack Tags",
   showLabel = true,
 }: TechStackInputProps) {
+  console.log('🎯 TechStackInput initialized with props:', {
+    tags,
+    onTagsChange: typeof onTagsChange,
+    maxTags,
+    placeholder,
+    label,
+    showLabel
+  });
+  
+  const [localTags, setLocalTags] = useState<string[]>(tags);
   const [input, setInput] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
@@ -121,11 +37,15 @@ export default function TechStackInput({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setLocalTags(tags);
+  }, [tags]);
+
+  useEffect(() => {
     if (input.trim()) {
       const filtered = TECH_STACK_OPTIONS.filter(
         (tech) =>
           tech.toLowerCase().includes(input.toLowerCase()) &&
-          !tags.includes(tech)
+          !localTags.includes(tech)
       ).slice(0, 10);
       setFilteredOptions(filtered);
       setShowDropdown(filtered.length > 0);
@@ -135,7 +55,7 @@ export default function TechStackInput({
       setShowDropdown(false);
       setHighlightedIndex(0);
     }
-  }, [input, tags]);
+  }, [input, localTags]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -154,13 +74,36 @@ export default function TechStackInput({
   }, []);
 
   const addTag = (tag: string) => {
-    if (tags.length >= maxTags) return;
-    if (!tags.includes(tag)) {
-      const newTags = [...tags, tag];
-      onTagsChange(newTags);
+    console.log('🏷️  addTag called with:', tag);
+    console.log('🏷️  onTagsChange type:', typeof onTagsChange);
+    console.log('🏷️  onTagsChange value:', onTagsChange);
+    
+    setInput("");
+    setFilteredOptions([]);
+    setShowDropdown(false);
+    setHighlightedIndex(0);
+    inputRef.current?.focus();
+
+    if (!tag) return;
+
+    if (localTags.length >= maxTags) return;
+    if (!localTags.includes(tag)) {
+      const newTags = [...localTags, tag];
+      console.log('🏷️  New tags array:', newTags);
+      setLocalTags(newTags);
+      
+      // Call onTagsChange if it's a function
+      if (typeof onTagsChange === 'function') {
+        console.log('🏷️  Calling onTagsChange with:', newTags);
+        onTagsChange(newTags);
+      } else {
+        console.error('❌ onTagsChange is not a function!', onTagsChange);
+      }
+      
       // Dispatch custom event for non-React contexts (like Astro)
       const container = document.getElementById('techstack-container');
       if (container) {
+        console.log('🏷️  Dispatching custom event');
         const event = new CustomEvent('techstack-change', { 
           detail: { tags: newTags },
           bubbles: true 
@@ -168,14 +111,17 @@ export default function TechStackInput({
         container.dispatchEvent(event);
       }
     }
-    setInput("");
-    setShowDropdown(false);
-    inputRef.current?.focus();
   };
 
   const removeTag = (tag: string) => {
-    const newTags = tags.filter((t) => t !== tag);
-    onTagsChange(newTags);
+    const newTags = localTags.filter((t) => t !== tag);
+    setLocalTags(newTags);
+    
+    // Call onTagsChange if it's a function
+    if (typeof onTagsChange === 'function') {
+      onTagsChange(newTags);
+    }
+    
     // Dispatch custom event for non-React contexts (like Astro)
     const container = document.getElementById('techstack-container');
     if (container) {
@@ -199,16 +145,18 @@ export default function TechStackInput({
         setHighlightedIndex((i) => (i - 1 + filteredOptions.length) % filteredOptions.length);
       }
     } else if (e.key === 'Tab') {
-      if (filteredOptions.length > 0) {
+      if (filteredOptions.length > 0 && showDropdown) {
         e.preventDefault();
-        setInput(filteredOptions[highlightedIndex]);
-        setShowDropdown(false);
+        addTag(filteredOptions[highlightedIndex]);
       }
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const trimmed = input.trim();
-      if (!trimmed) return;
-      addTag(trimmed);
+      if (filteredOptions.length > 0 && showDropdown) {
+        addTag(filteredOptions[highlightedIndex]);
+      } else {
+        const trimmed = input.trim();
+        if (trimmed) addTag(trimmed);
+      }
     } else if (e.key === 'Escape') {
       setShowDropdown(false);
     }
@@ -219,9 +167,9 @@ export default function TechStackInput({
       {showLabel && (
         <label className="mb-1 block text-sm font-medium text-slate-300">
           {label}
-          {maxTags && tags.length > 0 && (
+          {maxTags && localTags.length > 0 && (
             <span className="ml-2 text-xs text-slate-500">
-              ({tags.length}/{maxTags})
+              ({localTags.length}/{maxTags})
             </span>
           )}
         </label>
@@ -233,11 +181,8 @@ export default function TechStackInput({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (filteredOptions.length > 0) setShowDropdown(true);
-          }}
           placeholder={placeholder}
-          disabled={tags.length >= maxTags}
+          disabled={localTags.length >= maxTags}
           className="w-full rounded-xl border border-slate-700/60 bg-slate-950/60 px-3 py-2 text-slate-200 outline-none transition placeholder:text-slate-500 focus:border-slate-600/60 disabled:cursor-not-allowed disabled:opacity-50"
         />
 
@@ -270,10 +215,10 @@ export default function TechStackInput({
         </AnimatePresence>
       </div>
 
-      {tags.length > 0 && (
+      {localTags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
           <AnimatePresence initial={false}>
-            {tags.map((tag) => (
+            {localTags.map((tag) => (
               <motion.span
                 key={tag}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -296,7 +241,7 @@ export default function TechStackInput({
         </div>
       )}
 
-      {tags.length >= maxTags && (
+      {localTags.length >= maxTags && (
         <p className="mt-2 text-xs text-slate-400">
           Maximum of {maxTags} tags reached
         </p>

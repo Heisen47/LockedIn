@@ -1,21 +1,49 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "../lib/api";
 
 interface ProfileMenuProps {
   handle?: string;
   avatarUrl?: string;
 }
 
-export default function ProfileMenu({ handle = "alexcodes", avatarUrl = "" }: ProfileMenuProps) {
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  handle: string;
+}
+
+export default function ProfileMenu({ handle: propHandle, avatarUrl: propAvatarUrl }: ProfileMenuProps) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const val = localStorage.getItem("demoLoggedIn");
-    setLoggedIn(val === "true");
+    async function checkAuth() {
+      try {
+        const response = await api.validate();
+        if (response.valid && response.user) {
+          setLoggedIn(true);
+          setUser(response.user);
+        } else {
+          setLoggedIn(false);
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Auth validation failed:', error);
+        setLoggedIn(false);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    checkAuth();
   }, []);
-
+  
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (!ref.current) return;
@@ -25,7 +53,11 @@ export default function ProfileMenu({ handle = "alexcodes", avatarUrl = "" }: Pr
     return () => document.removeEventListener("click", onDocClick);
   }, []);
 
-  if (!loggedIn) return null;
+  if (loading) return null;
+  if (!loggedIn || !user) return null;
+
+  const handle = user.handle || propHandle || "user";
+  const avatarUrl = propAvatarUrl || "";
 
   return (
     <div className="relative" ref={ref}>
@@ -74,11 +106,16 @@ export default function ProfileMenu({ handle = "alexcodes", avatarUrl = "" }: Pr
             <button
               className="block w-full px-4 py-2 text-left text-sm text-rose-300 hover:bg-rose-600/10"
               role="menuitem"
-              onClick={() => {
-                localStorage.setItem("demoLoggedIn", "false");
-                setOpen(false);
-                // simple refresh so server/astro picks up state on islands reused
-                location.reload();
+              onClick={async () => {
+                try {
+                  await api.logout();
+                  setOpen(false);
+                  setLoggedIn(false);
+                  setUser(null);
+                  location.href = '/';
+                } catch (error) {
+                  console.error('Logout failed:', error);
+                }
               }}
             >
               Log out
