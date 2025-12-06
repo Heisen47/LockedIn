@@ -47,7 +47,7 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 				<a href="/" class={`hidden md:block text-sm font-medium transition-colors ${page === "feed" ? "text-white" : "text-slate-300 hover:text-white"}`}>Feed</a>
 				<a href="/building" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Building</a>
 				<a href="/about" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">About</a>
-				<a href="/auth" id="feed-submit-btn" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-slate-900/40 backdrop-blur-sm hover:border-slate-600/60 transition">Submit</a>
+				<a href="/auth" id="feed-submit-btn" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-slate-900/40 backdrop-blur-sm hover:border-slate-600/60 transition">Join</a>
 				<ProfileMenu client:load />
 			</div>
 		)}
@@ -208,16 +208,15 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 				logoutBtn?.addEventListener('click', async () => {
 					try {
 						const token = sessionStorage.getItem('authToken');
-						const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/auth/logout`, {
-							method: 'POST',
+						const { default: axios } = await import('axios');
+						const resp = await axios.post(`${import.meta.env.PUBLIC_API_BASE_URL}/auth/logout`, {}, {
 							headers: {
 								'Content-Type': 'application/json',
 								'Authorization': `Bearer ${token}`
 							}
 						});
-						const data = await response.json();
-						const message = data.message || 'You have been logged out successfully';
-						
+						const message = resp?.data?.message || 'You have been logged out successfully';
+
 						sessionStorage.clear();
 						showModal(message, () => {
 							window.location.href = '/';
