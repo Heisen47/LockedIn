@@ -2,7 +2,6 @@
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
 import ProjectStack from "../../components/ProjectStack";
-import EditProfileButton from "../../components/EditProfileButton";
 import { FadeIn, StaggerContainer, StaggerItem } from "../../components/Animations";
 import type { Project } from "../../components/ProjectStack";
 
@@ -97,14 +96,6 @@ const projects: Project[] = [
               <a href={profile.github} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">GitHub</a>
               <a href={profile.linkedin} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">LinkedIn</a>
               <a id="profile-website" href={profile.website} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200 hover:border-slate-700/60">Website</a>
-              <EditProfileButton
-                client:load
-                handle={profile.handle}
-                initialEmail={profile.email}
-                initialWebsite={profile.website}
-                initialBio={profile.bio}
-                className="rounded-xl border border-indigo-500/30 bg-[linear-gradient(in_oklab,to_right,#6EE7F9_0%,#7C3AED_100%)] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90"
-              />
             </div>
           </div>
         </FadeIn>
