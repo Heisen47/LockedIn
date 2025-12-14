@@ -1,6 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TechStackInput from "./TechStackInput";
+import { Plus } from "lucide-react";
+import axios from "axios";
 
 const isValidGitHubUrl = (url: string) => {
   try {
@@ -29,27 +31,92 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
   const [status, setStatus] = useState<"live" | "building">("building");
   const [tags, setTags] = useState<string[]>([]);
   const [liveUrl, setLiveUrl] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const toastTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) {
+        window.clearTimeout(toastTimer.current);
+      }
+    };
+  }, []);
 
   const urlValid = useMemo(() => (link ? isValidGitHubUrl(link) : true), [link]);
   const liveUrlValid = useMemo(
     () => (status === "live" && liveUrl ? isValidHttpUrl(liveUrl) : true),
     [status, liveUrl]
   );
+  const tagsValid = tags.length > 0;
+  const liveUrlSatisfied = status === "live" ? !!liveUrl && liveUrlValid : true;
+  const canSubmit = Boolean(link && urlValid && tagsValid && liveUrlSatisfied && !submitting);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValidGitHubUrl(link)) return;
-    if (status === "live") {
-      if (!liveUrl || !isValidHttpUrl(liveUrl)) return;
+    setError(null);
+
+    if (!isValidGitHubUrl(link)) {
+      setError("Please provide a valid GitHub repository URL.");
+      return;
     }
+
+    if (!tagsValid) {
+      setError("Add at least one tech stack tag before posting.");
+      return;
+    }
+
+    if (status === "live") {
+      if (!liveUrl) {
+        setError("Live projects must include a Live Project URL.");
+        return;
+      }
+      if (!isValidHttpUrl(liveUrl)) {
+        setError("Please provide a valid live project URL (http or https).");
+        return;
+      }
+    }
+
+    const token = sessionStorage.getItem("authToken");
+    if (!token) {
+      setError("You must be logged in to create a post.");
+      return;
+    }
+
     const payload = { link, status, tags, liveUrl: status === "live" ? liveUrl : undefined };
-    // Placeholder: integrate with backend later
-    console.log("CreatePost payload", payload);
-    setOpen(false);
-    setLink("");
-    setStatus("building");
-    setTags([]);
-    setLiveUrl("");
+
+    try {
+      setSubmitting(true);
+      const base = (import.meta.env.PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
+      const endpoint = base ? `${base}/v1/posts` : "/v1/posts";
+      await axios.post(endpoint, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (toastTimer.current) {
+        window.clearTimeout(toastTimer.current);
+      }
+      setToast("Post created successfully!");
+      toastTimer.current = window.setTimeout(() => setToast(null), 4000);
+
+      setOpen(false);
+      setLink("");
+      setStatus("building");
+      setTags([]);
+      setLiveUrl("");
+    } catch (err) {
+      const message =
+        (err as any)?.response?.data?.message ||
+        (err as Error)?.message ||
+        "Unable to create the post. Please try again.";
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const buttonClass = compact
@@ -58,20 +125,26 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className="relative">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between ">
         <motion.button
-          whileTap={{ scale: 0.98 }}
+          // whileTap={{ scale: 0.98 }}
           whileHover={{ y: -1 }}
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setError(null);
+            setOpen(true);
+          }}
           className={buttonClass}
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-cyan-400" />
-          Create Post
+          <span className="" />
+          <Plus/> Create Post
         </motion.button>
         {!compact && (
           <p className="text-sm text-slate-400">Share a GitHub project with status and tech stack.</p>
         )}
       </div>
+      {toast && (
+        <p className="mt-2 text-xs font-medium text-emerald-300">{toast}</p>
+      )}
 
       <AnimatePresence>
         {open && (
@@ -181,6 +254,13 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
                     placeholder="Type to search tech stack..."
                     label="Tech Stack Tags"
                   />
+                  {!tagsValid && (
+                    <p className="mt-1 text-xs text-slate-400">Add at least one tag (required).</p>
+                  )}
+
+                  {error && (
+                    <p className="text-sm text-rose-400">{error}</p>
+                  )}
 
                   <div className="mt-6 flex items-center justify-end gap-3">
                     <button
@@ -193,10 +273,10 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       type="submit"
-                      disabled={!urlValid || !link || (status === "live" && (!liveUrl || !liveUrlValid))}
+                      disabled={!canSubmit}
                       className="rounded-xl border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] px-4 py-2 text-sm font-semibold text-slate-100 opacity-100 hover:border-slate-600/60 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                      Post
+                      {submitting ? "Posting..." : "Post"}
                     </motion.button>
                   </div>
                 </form>

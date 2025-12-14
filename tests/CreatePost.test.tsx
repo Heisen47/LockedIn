@@ -1,7 +1,21 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CreatePost from '../src/components/CreatePost';
+import axios from 'axios';
+
+vi.mock('axios', () => ({
+  default: {
+    post: vi.fn(),
+  },
+}));
+
+const mockedAxios = vi.mocked(axios);
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  sessionStorage.clear();
+});
 
 describe('CreatePost', () => {
   it('renders compact button variant', () => {
@@ -138,37 +152,54 @@ describe('CreatePost', () => {
   });
 
   it('submits form with valid data', async () => {
-    const consoleSpy = vi.spyOn(console, 'log');
     const user = userEvent.setup();
+    mockedAxios.post.mockResolvedValue({ data: { id: '123' } });
+    sessionStorage.setItem('authToken', 'test-token');
     render(<CreatePost />);
     
     await user.click(screen.getByRole('button', { name: /Create Post/i }));
     
     const input = screen.getByPlaceholderText(/github\.com/i);
     await user.type(input, 'https://github.com/user/awesome-repo');
+
+    const tagInput = screen.getByPlaceholderText(/Type to search tech stack/i);
+    await user.type(tagInput, 'react');
+    await user.keyboard('{Enter}');
     
     const submitButton = screen.getByRole('button', { name: /^Post$/i });
     await user.click(submitButton);
     
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'CreatePost payload',
-      expect.objectContaining({
-        link: 'https://github.com/user/awesome-repo',
-        status: 'building',
-      })
-    );
-    
-    consoleSpy.mockRestore();
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/posts'),
+        expect.objectContaining({
+          link: 'https://github.com/user/awesome-repo',
+          status: 'building',
+          tags: expect.arrayContaining(['React']),
+        }),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test-token',
+          }),
+        })
+      );
+    });
   });
 
   it('resets form after successful submission', async () => {
     const user = userEvent.setup();
+    mockedAxios.post.mockResolvedValue({ data: { id: '123' } });
+    sessionStorage.setItem('authToken', 'test-token');
     render(<CreatePost />);
     
     await user.click(screen.getByRole('button', { name: /Create Post/i }));
     
     const input = screen.getByPlaceholderText(/github\.com/i);
     await user.type(input, 'https://github.com/user/repo');
+
+    const tagInput = screen.getByPlaceholderText(/Type to search tech stack/i);
+    await user.type(tagInput, 'astro');
+    await user.keyboard('{Enter}');
     
     const submitButton = screen.getByRole('button', { name: /^Post$/i });
     await user.click(submitButton);
