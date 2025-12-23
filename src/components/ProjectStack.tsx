@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 import VoteButtons from "./VoteButtons";
 import TagList from "./TagList";
 import CommentBox from "./CommentBox";
+
+const FOLLOW_ENDPOINT = "/api/v1/users/e3957cd3-22a6-4c37-bf6d-435350aef137/follow";
 
 export interface Project {
   id: string;
@@ -31,6 +34,8 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
   }, [projects]);
   const [index, setIndex] = useState(0);
   const [following, setFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followError, setFollowError] = useState<string | null>(null);
   const [awarded, setAwarded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -70,6 +75,43 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
     };
   }, []);
 
+  const handleFollow = async () => {
+    if (following || followLoading) return;
+    setFollowError(null);
+
+    const token = typeof window !== "undefined" ? sessionStorage.getItem("authToken") : null;
+    if (!token) {
+      setFollowError("Log in to follow others.");
+      return;
+    }
+
+    const base = (import.meta.env.PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
+    const endpoint = base ? `${base}${FOLLOW_ENDPOINT}` : FOLLOW_ENDPOINT;
+
+    try {
+      setFollowLoading(true);
+      await axios.post(
+        endpoint,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setFollowing(true);
+    } catch (error) {
+      const message =
+        (error as any)?.response?.data?.message ||
+        (error as Error)?.message ||
+        "Unable to follow user.";
+      setFollowError(message);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   return (
     <div className="relative">
       {/* Header */}
@@ -83,17 +125,18 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
           {showFollow && (
             <motion.button
               type="button"
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setFollowing((f) => !f)}
+              whileTap={{ scale: following || followLoading ? 1 : 0.98 }}
+              onClick={handleFollow}
+              disabled={following || followLoading}
               className={`ml-2 rounded-full border px-4 py-1.5 text-sm transition ${
                 following
                   ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
                   : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
-              }`}
+              } ${followLoading ? "opacity-60" : ""}`}
               aria-pressed={following}
-              aria-label={following ? "Unfollow" : "Follow"}
+              aria-label={following ? "Following" : "Follow"}
             >
-              {following ? "Following" : "Follow"}
+              {followLoading ? "Following..." : following ? "Following" : "Follow"}
             </motion.button>
           )}
         </div>
@@ -162,6 +205,11 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
           )}
         </div>
       </div>
+      {followError && (
+        <p className="-mt-2 mb-3 text-xs text-rose-400" role="status">
+          {followError}
+        </p>
+      )}
 
       {/* Stack visualization */}
       <div className="relative h-[420px]">
