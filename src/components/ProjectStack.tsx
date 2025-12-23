@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import VoteButtons from "./VoteButtons";
 import TagList from "./TagList";
@@ -26,6 +26,9 @@ interface Props {
 }
 
 export default function ProjectStack({ user, projects, showFollow = true }: Props) {
+  const sortedProjects = useMemo(() => {
+    return [...projects].sort((a, b) => toTimestamp(b.createdAt) - toTimestamp(a.createdAt));
+  }, [projects]);
   const [index, setIndex] = useState(0);
   const [following, setFollowing] = useState(false);
   const [awarded, setAwarded] = useState(false);
@@ -35,8 +38,8 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const count = projects.length;
-  const current = count > 0 ? projects[index] : undefined;
+  const count = sortedProjects.length;
+  const current = count > 0 ? sortedProjects[index] : undefined;
 
   const next = () => {
     if (count === 0) return;
@@ -169,7 +172,7 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
         ) : (
           [2, 1, 0].map((offset) => {
             const i = (index + offset) % count;
-            const p = projects[i];
+            const p = sortedProjects[i];
             const depth = 2 - offset; // 0 back ... 2 front
             const isFront = offset === 0;
 
@@ -287,7 +290,11 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
 
       {/* Comments */}
       <div className="mt-4">
-        <CommentBox key={current?.id ?? "none"} initial={current?.comments ?? []} />
+        <CommentBox
+          key={current?.id ?? "none"}
+          initial={current?.comments ?? []}
+          title={current?.title ?? "Discussion"}
+        />
       </div>
 
       {/* Report Modal */}
@@ -369,4 +376,19 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
       )}
     </div>
   );
+}
+
+function toTimestamp(value: Project["createdAt"]): number {
+  if (value instanceof Date) {
+    const time = value.getTime();
+    return Number.isNaN(time) ? 0 : time;
+  }
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? 0 : value;
+  }
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
 }

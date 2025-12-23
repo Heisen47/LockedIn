@@ -25,16 +25,48 @@ const isValidHttpUrl = (url: string) => {
   }
 };
 
+type ToastTone = "success" | "error";
+
+const getRepoSlug = (url: string) => {
+  try {
+    const u = new URL(url);
+    const segments = u.pathname.split("/").filter(Boolean);
+    if (segments.length >= 2) {
+      return `${segments[0]}/${segments[1]}`;
+    }
+    return "";
+  } catch {
+    return "";
+  }
+};
+
 export default function CreatePost({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState("");
   const [status, setStatus] = useState<"live" | "building">("building");
   const [tags, setTags] = useState<string[]>([]);
   const [liveUrl, setLiveUrl] = useState("");
+  const [content, setContent] = useState("");
+  const [customImageUrl, setCustomImageUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; tone: ToastTone } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const toastTimer = useRef<number | null>(null);
+
+  const triggerToast = (message: string, tone: ToastTone) => {
+    if (toastTimer.current) {
+      window.clearTimeout(toastTimer.current);
+    }
+    setToast({ message, tone });
+    toastTimer.current = window.setTimeout(() => setToast(null), 4500);
+  };
+
+  const dismissToast = () => {
+    if (toastTimer.current) {
+      window.clearTimeout(toastTimer.current);
+    }
+    setToast(null);
+  };
 
   useEffect(() => {
     return () => {
@@ -50,8 +82,23 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
     [status, liveUrl]
   );
   const tagsValid = tags.length > 0;
+  const contentValid = content.trim().length > 0;
   const liveUrlSatisfied = status === "live" ? !!liveUrl && liveUrlValid : true;
-  const canSubmit = Boolean(link && urlValid && tagsValid && liveUrlSatisfied && !submitting);
+  const derivedImageUrl = useMemo(() => {
+    const slug = getRepoSlug(link);
+    return slug ? `https://opengraph.githubassets.com/1/${slug}` : "";
+  }, [link]);
+  const customImageUrlValid = useMemo(() => (customImageUrl ? isValidHttpUrl(customImageUrl) : true), [customImageUrl]);
+  const finalImageUrl = customImageUrl.trim() || derivedImageUrl;
+  const canSubmit = Boolean(
+    link &&
+    urlValid &&
+    tagsValid &&
+    contentValid &&
+    liveUrlSatisfied &&
+    customImageUrlValid &&
+    !submitting
+  );
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +114,11 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
       return;
     }
 
+    if (!contentValid) {
+      setError("Tell people what you're building before posting.");
+      return;
+    }
+
     if (status === "live") {
       if (!liveUrl) {
         setError("Live projects must include a Live Project URL.");
@@ -78,13 +130,32 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
       }
     }
 
+    if (!customImageUrlValid) {
+      setError("Please provide a valid image URL (http or https).");
+      return;
+    }
+
     const token = sessionStorage.getItem("authToken");
     if (!token) {
       setError("You must be logged in to create a post.");
       return;
     }
 
-    const payload = { link, status, tags, liveUrl: status === "live" ? liveUrl : undefined };
+    const payload: {
+      content: string;
+      status: "BUILDING" | "LIVE";
+      tags: string[];
+      imageUrl?: string;
+    } = {
+      content: content.trim(),
+      projectLink: link.trim(),
+      status: status === "live" ? "LIVE" : "BUILDING",
+      tags,
+    };
+
+    if (finalImageUrl) {
+      payload.imageUrl = finalImageUrl;
+    }
 
     try {
       setSubmitting(true);
@@ -97,23 +168,22 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
         },
       });
 
-      if (toastTimer.current) {
-        window.clearTimeout(toastTimer.current);
-      }
-      setToast("Post created successfully!");
-      toastTimer.current = window.setTimeout(() => setToast(null), 4000);
+      triggerToast("Post created successfully!", "success");
 
       setOpen(false);
       setLink("");
       setStatus("building");
       setTags([]);
       setLiveUrl("");
+      setContent("");
+      setCustomImageUrl("");
     } catch (err) {
       const message =
         (err as any)?.response?.data?.message ||
         (err as Error)?.message ||
         "Unable to create the post. Please try again.";
       setError(message);
+      triggerToast("We couldn’t create your post. Please try again.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -142,10 +212,6 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
           <p className="text-sm text-slate-400">Share a GitHub project with status and tech stack.</p>
         )}
       </div>
-      {toast && (
-        <p className="mt-2 text-xs font-medium text-emerald-300">{toast}</p>
-      )}
-
       <AnimatePresence>
         {open && (
           <motion.div
@@ -194,6 +260,43 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
                     />
                     {!urlValid && (
                       <p className="mt-1 text-xs text-rose-400">Please enter a valid GitHub repository URL.</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-300">Preview Image URL <span className="text-slate-500">(optional)</span></label>
+                    <input
+                      type="url"
+                      placeholder="https://example.com/share-card.png"
+                      value={customImageUrl}
+                      onChange={(e) => setCustomImageUrl(e.target.value)}
+                      className={`w-full rounded-xl border bg-slate-950/60 px-3 py-2 text-sm text-slate-200 outline-none transition placeholder:text-slate-500 ${
+                        customImageUrlValid ? "border-slate-700/60 focus:border-slate-600/60" : "border-rose-600/60 focus:border-rose-500/60"
+                      }`}
+                    />
+                    {customImageUrl ? (
+                      !customImageUrlValid && (
+                        <p className="mt-1 text-xs text-rose-400">Please enter a valid image URL (http or https).</p>
+                      )
+                    ) : (
+                      <p className="mt-1 text-xs text-slate-500">Leave blank to auto-generate using the project name.</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-300">What are you building?</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Describe your project, goals, or current progress..."
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      className={`w-full rounded-xl border bg-slate-950/60 px-3 py-2 text-sm text-slate-200 outline-none transition placeholder:text-slate-500 ${
+                        contentValid ? "border-slate-700/60 focus:border-slate-600/60" : "border-rose-600/60 focus:border-rose-500/60"
+                      }`}
+                      required
+                    />
+                    {!contentValid && (
+                      <p className="mt-1 text-xs text-rose-400">Share a short description to help others follow along.</p>
                     )}
                   </div>
 
@@ -281,6 +384,42 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
                   </div>
                 </form>
               </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <div
+              role="status"
+              aria-live="polite"
+              className={`flex w-full max-w-md items-start gap-3 rounded-2xl border px-5 py-4 text-sm shadow-2xl backdrop-blur ${
+                toast.tone === "success"
+                  ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-100"
+                  : "border-rose-400/40 bg-rose-500/15 text-rose-100"
+              }`}
+            >
+              <div className="flex-1">
+                <p className="text-base font-semibold">
+                  {toast.tone === "success" ? "Post created" : "Post failed"}
+                </p>
+                <p className="mt-1 text-[13px] leading-relaxed text-slate-100/90">{toast.message}</p>
+              </div>
+              <button
+                type="button"
+                onClick={dismissToast}
+                className="text-xs font-semibold uppercase tracking-wide text-slate-200"
+                aria-label="Dismiss toast"
+              >
+                Close
+              </button>
             </div>
           </motion.div>
         )}

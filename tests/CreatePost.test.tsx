@@ -162,6 +162,9 @@ describe('CreatePost', () => {
     const input = screen.getByPlaceholderText(/github\.com/i);
     await user.type(input, 'https://github.com/user/awesome-repo');
 
+    const contentInput = screen.getByPlaceholderText(/Describe your project/i);
+    await user.type(contentInput, 'Shipping a cool new feature');
+
     const tagInput = screen.getByPlaceholderText(/Type to search tech stack/i);
     await user.type(tagInput, 'react');
     await user.keyboard('{Enter}');
@@ -175,7 +178,9 @@ describe('CreatePost', () => {
         expect.objectContaining({
           link: 'https://github.com/user/awesome-repo',
           status: 'building',
+          content: 'Shipping a cool new feature',
           tags: expect.arrayContaining(['React']),
+          imageUrl: 'https://opengraph.githubassets.com/1/user/awesome-repo',
         }),
         expect.objectContaining({
           headers: expect.objectContaining({
@@ -196,6 +201,9 @@ describe('CreatePost', () => {
     
     const input = screen.getByPlaceholderText(/github\.com/i);
     await user.type(input, 'https://github.com/user/repo');
+
+    const contentInput = screen.getByPlaceholderText(/Describe your project/i);
+    await user.type(contentInput, 'Iterating on onboarding');
 
     const tagInput = screen.getByPlaceholderText(/Type to search tech stack/i);
     await user.type(tagInput, 'astro');
