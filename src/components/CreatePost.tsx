@@ -143,6 +143,7 @@ export default function CreatePost({ compact = false }: { compact?: boolean }) {
 
     const payload: {
       content: string;
+      projectLink: string;
       status: "BUILDING" | "LIVE";
       tags: string[];
       imageUrl?: string;

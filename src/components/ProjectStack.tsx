@@ -5,8 +5,6 @@ import VoteButtons from "./VoteButtons";
 import TagList from "./TagList";
 import CommentBox from "./CommentBox";
 
-const FOLLOW_ENDPOINT = "/api/v1/users/e3957cd3-22a6-4c37-bf6d-435350aef137/follow";
-
 export interface Project {
   id: string;
   title: string;
@@ -15,25 +13,26 @@ export interface Project {
   status: "live" | "building";
   score?: number;
   comments?: { id: string; author: string; text: string }[];
-  // Optional GitHub/meta stats
-  durationDays?: number; // duration from first commit to latest, in days
+  durationDays?: number; 
   stars?: number;
   forks?: number;
-  createdAt?: string | number | Date; // when the post was made
+  createdAt?: string | number | Date; 
 }
 
 interface Props {
   user: { name: string; handle: string; avatar?: string };
   projects: Project[];
-  showFollow?: boolean; // whether to show the Follow button in header (defaults to true)
+  showFollow?: boolean; 
+  initiallyFollowing?: boolean;
 }
 
-export default function ProjectStack({ user, projects, showFollow = true }: Props) {
+export default function ProjectStack({ user, projects, showFollow = true, initiallyFollowing = false }: Props) {
   const sortedProjects = useMemo(() => {
     return [...projects].sort((a, b) => toTimestamp(b.createdAt) - toTimestamp(a.createdAt));
   }, [projects]);
   const [index, setIndex] = useState(0);
-  const [following, setFollowing] = useState(false);
+  const [following, setFollowing] = useState(initiallyFollowing);
+  const [isSelf, setIsSelf] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [followError, setFollowError] = useState<string | null>(null);
   const [awarded, setAwarded] = useState(false);
@@ -75,8 +74,21 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
     };
   }, []);
 
+  useEffect(() => {
+    setFollowing(initiallyFollowing);
+  }, [initiallyFollowing]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      setIsSelf(false);
+      return;
+    }
+    const loggedInHandle = sessionStorage.getItem("username")?.toLowerCase();
+    setIsSelf(Boolean(loggedInHandle && user.handle?.toLowerCase() === loggedInHandle));
+  }, [user.handle]);
+
   const handleFollow = async () => {
-    if (following || followLoading) return;
+    if (following || followLoading || isSelf) return;
     setFollowError(null);
 
     const token = typeof window !== "undefined" ? sessionStorage.getItem("authToken") : null;
@@ -85,8 +97,14 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
       return;
     }
 
+    const username = user.handle;
+    if (!username) {
+      setFollowError("Unable to find user handle.");
+      return;
+    }
+
     const base = (import.meta.env.PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
-    const endpoint = base ? `${base}${FOLLOW_ENDPOINT}` : FOLLOW_ENDPOINT;
+    const endpoint = base ? `${base}/v1/users/${encodeURIComponent(username)}/follow` : `/v1/users/${encodeURIComponent(username)}/follow`;
 
     try {
       setFollowLoading(true);
@@ -103,7 +121,7 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
       setFollowing(true);
     } catch (error) {
       const message =
-        (error as any)?.response?.data?.message ||
+        (error as any)?.response?.data?.error ||
         (error as Error)?.message ||
         "Unable to follow user.";
       setFollowError(message);
@@ -122,7 +140,7 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
             <p className="text-sm font-semibold text-slate-200">{user.name}</p>
             <p className="text-xs text-slate-400">@{user.handle}</p>
           </div>
-          {showFollow && (
+          {showFollow && !following && !isSelf && (
             <motion.button
               type="button"
               whileTap={{ scale: following || followLoading ? 1 : 0.98 }}
@@ -138,6 +156,11 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
             >
               {followLoading ? "Following..." : following ? "Following" : "Follow"}
             </motion.button>
+          )}
+          {showFollow && following && !isSelf && (
+            <span className="ml-2 rounded-full border border-cyan-500/60 bg-cyan-500/10 px-4 py-1.5 text-sm font-medium text-cyan-300">
+              Following
+            </span>
           )}
         </div>
         <div className="ml-auto flex items-center gap-3">
@@ -313,7 +336,7 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
                   </div>
 
                   <div className="flex items-center justify-between gap-4">
-                    <VoteButtons initial={p.score ?? 0} />
+                    <VoteButtons initial={p.score ?? 0} postId={p.id} />
                     <div className="flex gap-2">
                       <button
                         onClick={prev}
