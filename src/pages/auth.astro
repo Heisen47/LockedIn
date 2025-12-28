@@ -49,6 +49,7 @@ import TechStackInput from "../components/TechStackInput";
 
 						<!-- Sign In Form -->
 						<div id="form-signin" class="auth-form">
+							<div id="signin-error" class="mb-4 hidden rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[11px] text-rose-300"></div>
 							<form class="space-y-3 mb-5">
 								<div>
 									<label for="signin-username" class="block text-xs font-medium text-slate-400 mb-1">Username</label>
@@ -81,6 +82,7 @@ import TechStackInput from "../components/TechStackInput";
 
 						<!-- Sign Up Form -->
 						<div id="form-signup" class="auth-form hidden">
+							<div id="signup-error" class="mb-4 hidden rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[11px] text-rose-300"></div>
 							<form class="mb-5 grid grid-cols-1 gap-3 lg:grid-cols-2">
 								<div>
 									<label for="signup-username" class="block text-xs font-medium text-slate-400 mb-1">Username</label>
@@ -239,6 +241,26 @@ import TechStackInput from "../components/TechStackInput";
 <script>
 	import { api } from '../lib/api';
 
+	function getErrorMessage(error: any): string {
+		return (
+			error?.response?.data?.message ||
+			error?.response?.data?.error ||
+			error?.message ||
+			'Something went wrong. Please try again.'
+		);
+	}
+
+	function showError(box: HTMLElement | null, message: string) {
+		if (!box) return;
+		if (message) {
+			box.textContent = message;
+			box.classList.remove('hidden');
+		} else {
+			box.textContent = '';
+			box.classList.add('hidden');
+		}
+	}
+
 	// Tab switching
 	const signinTab = document.getElementById('tab-signin');
 	const signupTab = document.getElementById('tab-signup');
@@ -246,6 +268,8 @@ import TechStackInput from "../components/TechStackInput";
 	const signupForm = document.getElementById('form-signup');
 	const authTitle = document.getElementById('auth-title');
 	const authSubtitle = document.getElementById('auth-subtitle');
+	const signinErrorBox = document.getElementById('signin-error');
+	const signupErrorBox = document.getElementById('signup-error');
 
 	function setActiveTab(tab: 'signin' | 'signup') {
 		if (tab === 'signin') {
@@ -259,6 +283,7 @@ import TechStackInput from "../components/TechStackInput";
 			// Update header text for sign in
 			if (authTitle) authTitle.textContent = 'Welcome back';
 			if (authSubtitle) authSubtitle.textContent = 'Sign in with your developer account';
+			showError(signinErrorBox, '');
 		} else {
 			signupTab?.classList.add('bg-slate-800/60', 'text-slate-100');
 			signupTab?.classList.remove('text-slate-400');
@@ -270,6 +295,7 @@ import TechStackInput from "../components/TechStackInput";
 			// Update header text for sign up
 			if (authTitle) authTitle.textContent = 'Join LockedIn';
 			if (authSubtitle) authSubtitle.textContent = 'Create your developer account and start building';
+			showError(signupErrorBox, '');
 		}
 	}
 
@@ -333,11 +359,12 @@ import TechStackInput from "../components/TechStackInput";
 			});
 
 			
+			showError(signinErrorBox, '');
 			// Redirect to feed
 			window.location.href = '/';
 		} catch (error) {
 			console.error('Login failed:', error);
-			alert(error instanceof Error ? error.message : 'Login failed. Please try again.');
+			showError(signinErrorBox, getErrorMessage(error));
 			
 			if (submitBtn) {
 				submitBtn.disabled = false;
@@ -373,12 +400,12 @@ import TechStackInput from "../components/TechStackInput";
 				techStack: techStackTags,
 			});
 			
+			showError(signupErrorBox, '');
 			// Redirect to feed
 			window.location.href = '/';
 		} catch (error: any) {
 			console.error('Registration failed:', error);
-			const errorMessage = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
-			alert(errorMessage);
+			showError(signupErrorBox, getErrorMessage(error));
 			
 			if (submitBtn) {
 				submitBtn.disabled = false;

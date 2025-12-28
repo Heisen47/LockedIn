@@ -1,6 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { isAxiosError } from 'axios';
 import { api } from '../lib/api';
 import TechStackInput from './TechStackInput';
+
+const getErrorMessage = (err: unknown) => {
+  if (isAxiosError(err)) {
+    const data = err.response?.data as { message?: string; error?: string } | undefined;
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
+  }
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  return 'Authentication failed';
+};
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,18 +21,9 @@ export default function AuthForm() {
   const [techStack, setTechStack] = useState<string[]>([]);
   
   const handleTechStackChange = (newTags: string[]) => {
-    console.log('🔧 Tech stack callback received:', newTags);
-    console.log('🔧 Array length:', newTags.length);
-    console.log('🔧 Individual items:', newTags.map((tag, i) => `[${i}]: "${tag}"`));
     setTechStack(newTags);
   };
-  
-  // Log tech stack changes
-  useEffect(() => {
-    console.log('✅ Tech stack state updated to:', techStack);
-    console.log('✅ Is array?', Array.isArray(techStack));
-    console.log('✅ Length:', techStack.length);
-  }, [techStack]);
+
   
   const [formData, setFormData] = useState({
     username: '',
@@ -37,18 +40,11 @@ export default function AuthForm() {
     try {
       if (isLogin) {
         const response = await api.login({
-          email: formData.email,
+          username: formData.email,
           password: formData.password,
         });
         
-        console.log('Login successful:', response.user);
-        
       } else {
-        console.log('📤 Submitting registration...');
-        console.log('📤 Tech stack before submit:', techStack);
-        console.log('📤 Tech stack is array?', Array.isArray(techStack));
-        console.log('📤 Tech stack length:', techStack.length);
-        console.log('📤 Tech stack items:', techStack);
         
         if (!techStack || techStack.length === 0) {
           setError('Please add at least one technology to your tech stack');
@@ -63,17 +59,14 @@ export default function AuthForm() {
           bio: formData.bio,
           techStack: techStack,
         };
-        
-        console.log('📤 Full registration data:', registerData);
-        console.log('📤 Registration data.techStack:', registerData.techStack);
+       
         
         const response = await api.register(registerData);
         
-        console.log('✅ Registration successful:', response.user);
         
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
