@@ -26,6 +26,8 @@ interface Props {
   initiallyFollowing?: boolean;
 }
 
+const getFollowStorageKey = (handle?: string) => (handle ? `following:${handle.toLowerCase()}` : null);
+
 export default function ProjectStack({ user, projects, showFollow = true, initiallyFollowing = false }: Props) {
   const sortedProjects = useMemo(() => {
     return [...projects].sort((a, b) => toTimestamp(b.createdAt) - toTimestamp(a.createdAt));
@@ -75,8 +77,15 @@ export default function ProjectStack({ user, projects, showFollow = true, initia
   }, []);
 
   useEffect(() => {
-    setFollowing(initiallyFollowing);
-  }, [initiallyFollowing]);
+    if (typeof window === "undefined") return;
+    const key = getFollowStorageKey(user.handle);
+    const stored = key ? sessionStorage.getItem(key) : null;
+    if (initiallyFollowing || stored === "true") {
+      setFollowing(true);
+    } else {
+      setFollowing(false);
+    }
+  }, [initiallyFollowing, user.handle]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -119,11 +128,60 @@ export default function ProjectStack({ user, projects, showFollow = true, initia
         }
       );
       setFollowing(true);
+      const key = getFollowStorageKey(username);
+      if (key) {
+        sessionStorage.setItem(key, "true");
+      }
     } catch (error) {
       const message =
         (error as any)?.response?.data?.error ||
         (error as Error)?.message ||
         "Unable to follow user.";
+      setFollowError(message);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!following || followLoading || isSelf) return;
+    setFollowError(null);
+
+    const token = typeof window !== "undefined" ? sessionStorage.getItem("authToken") : null;
+    if (!token) {
+      setFollowError("Log in to manage follows.");
+      return;
+    }
+
+    const username = user.handle;
+    if (!username) {
+      setFollowError("Unable to find user handle.");
+      return;
+    }
+
+    const base = (import.meta.env.PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
+    const endpoint = base
+      ? `${base}/v1/users/${encodeURIComponent(username)}/unfollow`
+      : `/v1/users/${encodeURIComponent(username)}/unfollow`;
+
+    try {
+      setFollowLoading(true);
+      await axios.delete(endpoint, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setFollowing(false);
+      const key = getFollowStorageKey(username);
+      if (key) {
+        sessionStorage.removeItem(key);
+      }
+    } catch (error) {
+      const message =
+        (error as any)?.response?.data?.error ||
+        (error as Error)?.message ||
+        "Unable to unfollow user.";
       setFollowError(message);
     } finally {
       setFollowLoading(false);
@@ -140,27 +198,22 @@ export default function ProjectStack({ user, projects, showFollow = true, initia
             <p className="text-sm font-semibold text-slate-200">{user.name}</p>
             <p className="text-xs text-slate-400">@{user.handle}</p>
           </div>
-          {showFollow && !following && !isSelf && (
+          {showFollow && !isSelf && (
             <motion.button
               type="button"
-              whileTap={{ scale: following || followLoading ? 1 : 0.98 }}
-              onClick={handleFollow}
-              disabled={following || followLoading}
+              whileTap={{ scale: followLoading ? 1 : 0.98 }}
+              onClick={following ? handleUnfollow : handleFollow}
+              disabled={followLoading}
               className={`ml-2 rounded-full border px-4 py-1.5 text-sm transition ${
                 following
-                  ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                  ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300 hover:border-cyan-400/60"
                   : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
               } ${followLoading ? "opacity-60" : ""}`}
               aria-pressed={following}
-              aria-label={following ? "Following" : "Follow"}
+              aria-label={following ? "Unfollow" : "Follow"}
             >
-              {followLoading ? "Following..." : following ? "Following" : "Follow"}
+              {followLoading ? "Please wait..." : following ? "Following" : "Follow"}
             </motion.button>
-          )}
-          {showFollow && following && !isSelf && (
-            <span className="ml-2 rounded-full border border-cyan-500/60 bg-cyan-500/10 px-4 py-1.5 text-sm font-medium text-cyan-300">
-              Following
-            </span>
           )}
         </div>
         <div className="ml-auto flex items-center gap-3">
