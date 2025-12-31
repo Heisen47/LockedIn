@@ -2,88 +2,278 @@
 import ProfileMenu from "./ProfileMenu";
 
 interface Props {
-	transparent?: boolean;
-	minimal?: boolean;
-	page?: "home" | "feed" | "building" | "profile" | "about" | "settings"; 
-	loggedIn?: boolean; 
+  transparent?: boolean;
+  minimal?: boolean;
+  page?: "home" | "feed" | "building" | "profile" | "about" | "settings";
+  loggedIn?: boolean;
 }
 
-const { transparent = false, minimal = false, page = "home", loggedIn = false } = Astro.props;
+const {
+  transparent = false,
+  minimal = false,
+  page = "home",
+  loggedIn = false,
+} = Astro.props;
 ---
 
 <nav
-	class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-		transparent && !minimal ? "bg-transparent" : "bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50"
-	}`}
+  class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+    transparent && !minimal
+      ? "bg-transparent"
+      : "bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50"
+  }`}
 >
-	<div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
-		<a href="/" class="flex items-center gap-3 transition-opacity hover:opacity-80">
-			<span class="h-2 w-2 rounded-full bg-linear-to-br from-cyan-400 to-pink-500 shadow-[0_0_12px_rgba(236,72,153,0.5)]"></span>
-			<span class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-100">LockedIn</span>
-		</a>
+  <div
+    class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-12"
+  >
+    <a
+      href="/"
+      class="flex items-center gap-3 transition-opacity hover:opacity-80"
+    >
+      <span
+        class="h-2 w-2 rounded-full bg-linear-to-br from-cyan-400 to-pink-500 shadow-[0_0_12px_rgba(236,72,153,0.5)]"
+      ></span>
+      <span
+        class="text-sm font-semibold uppercase tracking-[0.12em] text-slate-100"
+        >LockedIn</span
+      >
+    </a>
 
-		{!minimal && page === "home" && (
-			<div class="flex items-center gap-6">
-				<a href="#features" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Features</a>
-				<a href="#community" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Community</a>
-				<a href="/" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Feed</a>
-				{!loggedIn && (
-					<a href="/auth" class="rounded-full px-5 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Get Started</a>
-				)}
-				<ProfileMenu client:load handle="alexcodes" />
-			</div>
-		)}
+    {
+      !minimal && page === "home" && (
+        <div class="flex items-center gap-6">
+          <a
+            href="#features"
+            class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
+          >
+            Features
+          </a>
+          <a
+            href="#community"
+            class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
+          >
+            Community
+          </a>
+          <a
+            href="/"
+            class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
+          >
+            Feed
+          </a>
+          {!loggedIn && (
+            <a
+              href="/auth"
+              class="rounded-full px-5 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90"
+            >
+              Get Started
+            </a>
+          )}
+          <ProfileMenu client:load handle="alexcodes" />
+        </div>
+      )
+    }
 
-		{!minimal && page === "profile" && (
-			<div class="flex items-center gap-6">
-				<a href="/" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">Feed</a>
-				<a href="/about" class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block">About</a>
-				<ProfileMenu client:load handle="alexcodes" />
-			</div>
-		)}
+    {
+      !minimal && page === "profile" && (
+        <div class="flex items-center gap-6">
+          <a
+            href="/"
+            class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
+          >
+            Feed
+          </a>
+          <a
+            href="/about"
+            class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white md:block"
+          >
+            About
+          </a>
+          <ProfileMenu client:load handle="alexcodes" />
+        </div>
+      )
+    }
 
-		{!minimal && page === "feed" && (
-			<div class="flex items-center gap-4 sm:gap-6">
-				<a href="/" class={`hidden md:block text-sm font-medium transition-colors ${page === "feed" ? "text-white" : "text-slate-300 hover:text-white"}`}>Feed</a>
-				<a href="/building" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Building</a>
-				<a href="/about" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">About</a>
-				<a href="/auth" id="feed-submit-btn" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-slate-900/40 backdrop-blur-sm hover:border-slate-600/60 transition">Join</a>
-				<ProfileMenu client:load />
-			</div>
-		)}
+    {
+      !minimal && page === "feed" && (
+        <div class="flex items-center gap-4 sm:gap-6">
+          <a
+            href="/"
+            class={`hidden md:block text-sm font-medium transition-colors ${page === "feed" ? "text-white" : "text-slate-300 hover:text-white"}`}
+          >
+            Feed
+          </a>
+          <a
+            href="/building"
+            class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white"
+          >
+            Building
+          </a>
+          <a
+            href="/about"
+            class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white"
+          >
+            About
+          </a>
+          <div
+            class="hidden w-full max-w-xs items-center gap-2 rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1.5 text-sm text-slate-100 shadow-[0_10px_35px_rgba(15,23,42,0.45)] md:flex md:max-w-sm lg:max-w-md"
+            data-profile-search
+            style="display: none;"
+          >
+            <form
+              class="flex w-full items-center gap-2"
+              data-profile-search-form
+            >
+              <input
+                type="search"
+                class="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+                placeholder="Search profiles"
+                aria-label="Search profiles"
+                data-profile-search-input
+              />
+              <button type="submit" class="" data-profile-search-submit>
+                <svg
+                  class="h-4 w-4 text-slate-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-4.35-4.35m0 0A6.5 6.5 0 1010 16.5a6.5 6.5 0 006.65-6.35z"
+                  />
+                </svg>
+              </button>
+            </form>
+          </div>
+          <a
+            href="/auth"
+            id="feed-submit-btn"
+            class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-slate-900/40 backdrop-blur-sm hover:border-slate-600/60 transition"
+          >
+            Join
+          </a>
+          <ProfileMenu client:load />
+        </div>
+      )
+    }
 
-		{!minimal && page === "building" && (
-			<div class="flex items-center gap-4 sm:gap-6">
-				<a href="/" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Feed</a>
-				<a href="/building" class="hidden md:block text-sm font-medium text-white">Building</a>
-				<a href="/about" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">About</a>
-				<a href="/auth" id="building-submit-btn" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Submit</a>
-				<ProfileMenu client:load />
-			</div>
-		)}
+    {
+      !minimal && page === "building" && (
+        <div class="flex items-center gap-4 sm:gap-6">
+          <a
+            href="/"
+            class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white"
+          >
+            Feed
+          </a>
+          <a
+            href="/building"
+            class="hidden md:block text-sm font-medium text-white"
+          >
+            Building
+          </a>
+          <a
+            href="/about"
+            class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white"
+          >
+            About
+          </a>
+          <div
+            class="hidden w-full max-w-xs items-center gap-2 rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1.5 text-sm text-slate-100 shadow-[0_10px_35px_rgba(15,23,42,0.45)] md:flex md:max-w-sm lg:max-w-md"
+            data-profile-search
+            style="display: none;"
+          >
+            
+            <form
+              class="flex w-full items-center gap-2"
+              data-profile-search-form
+            >
+              <input
+                type="search"
+                class="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+                placeholder="Search profiles"
+                aria-label="Search profiles"
+                data-profile-search-input
+              />
+              <button type="submit" class="" data-profile-search-submit>
+                <svg
+				  class="h-4 w-4 text-slate-400"
+				  xmlns="http://www.w3.org/2000/svg"
+				  fill="none"
+				  viewBox="0 0 24 24"
+				  stroke="currentColor"
+				>
+				  <path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M21 21l-4.35-4.35m0 0A6.5 6.5 0 1010 16.5a6.5 6.5 0 006.65-6.35z"
+				  />
+				</svg>
+              </button>
+            </form>
+          </div>
+          <a
+            href="/auth"
+            id="building-submit-btn"
+            class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90"
+          >
+            Submit
+          </a>
+          <ProfileMenu client:load />
+        </div>
+      )
+    }
 
-		{!minimal && page === "about" && (
-			<div class="flex items-center gap-4 sm:gap-6">
-				<a href="/" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Feed</a>
-				<a href="/building" class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white">Building</a>
-				<a href="/about" class="hidden md:block text-sm font-medium text-white">About</a>
-				<a href="/auth" id="about-submit-btn" class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90">Submit</a>
-				<ProfileMenu client:load />
-			</div>
-		)}
-	</div>
+    {
+      !minimal && page === "about" && (
+        <div class="flex items-center gap-4 sm:gap-6">
+          <a
+            href="/"
+            class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white"
+          >
+            Feed
+          </a>
+          <a
+            href="/building"
+            class="hidden md:block text-sm font-medium text-slate-300 transition-colors hover:text-white"
+          >
+            Building
+          </a>
+          <a
+            href="/about"
+            class="hidden md:block text-sm font-medium text-white"
+          >
+            About
+          </a>
+          <a
+            href="/auth"
+            id="about-submit-btn"
+            class="rounded-full px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-700/60 bg-[linear-gradient(in_oklab,to_right,#fdeff9_0%,#ec38bc_35%,#7303c0_75%,#03001e_100%)] backdrop-blur-sm transition hover:border-slate-600/60 hover:opacity-90"
+          >
+            Submit
+          </a>
+          <ProfileMenu client:load />
+        </div>
+      )
+    }
+  </div>
 </nav>
 
 <script>
-	// Modal utility function
-	function showModal(message: string, onClose?: () => void) {
-		// Create modal backdrop
-		const backdrop = document.createElement('div');
-		backdrop.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm';
-		backdrop.id = 'auth-modal';
-		
-		// Create modal content
-		backdrop.innerHTML = `
+  // Modal utility function
+  function showModal(message: string, onClose?: () => void) {
+    // Create modal backdrop
+    const backdrop = document.createElement("div");
+    backdrop.className =
+      "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm";
+    backdrop.id = "auth-modal";
+
+    // Create modal content
+    backdrop.innerHTML = `
 			<div class="mx-4 w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-900/95 p-6 shadow-2xl backdrop-blur-xl">
 				<div class="mb-4 flex items-center justify-center">
 					<div class="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/10 border border-cyan-500/30">
@@ -92,148 +282,231 @@ const { transparent = false, minimal = false, page = "home", loggedIn = false } 
 						</svg>
 					</div>
 				</div>
-				<p class="mb-6 text-center text-sm text-slate-200">${message}</p>
+				<p class="mb-6 text-center text-sm text-slate-200" data-modal-message></p>
 				<button id="modal-close-btn" class="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-fuchsia-500 px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">
 					OK
 				</button>
 			</div>
 		`;
-		
-		document.body.appendChild(backdrop);
-		
-		// Close modal on button click
-		const closeBtn = document.getElementById('modal-close-btn');
-		closeBtn?.addEventListener('click', () => {
-			backdrop.remove();
-			if (onClose) onClose();
-		});
-		
-		// Close modal on backdrop click
-		backdrop.addEventListener('click', (e) => {
-			if (e.target === backdrop) {
-				backdrop.remove();
-				if (onClose) onClose();
-			}
-		});
-		
-		// Close on Escape key
-		const handleEscape = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				backdrop.remove();
-				if (onClose) onClose();
-				document.removeEventListener('keydown', handleEscape);
-			}
-		};
-		document.addEventListener('keydown', handleEscape);
-	}
 
-	// Check for protected routes
-	function checkProtectedRoute() {
-		const protectedRoutes = ['/settings', '/profile'];
-		const currentPath = window.location.pathname;
-		const token = sessionStorage.getItem('authToken');
-		
-		const isProtected = protectedRoutes.some(route => currentPath.startsWith(route));
-		
-		if (isProtected && !token) {
-			showModal('Please login to access this page', () => {
-				window.location.href = '/auth';
-			});
-		}
-	}
+    const messageEl = backdrop.querySelector("[data-modal-message]");
+    if (messageEl) {
+      messageEl.textContent = message;
+    }
 
-	function checkAuthAndUpdateButtons() {
-		// Check if we have a token and user info in session storage
-		const token = sessionStorage.getItem('authToken');
-		const username = sessionStorage.getItem('username');
-		
-		if (!token || !username) {
-			console.log('No auth token or username found');
-			return;
-		}
+    document.body.appendChild(backdrop);
 
-		console.log('✅ User is logged in:', username);
+    // Close modal on button click
+    const closeBtn = document.getElementById("modal-close-btn");
+    closeBtn?.addEventListener("click", () => {
+      backdrop.remove();
+      if (onClose) onClose();
+    });
 
-		// Update all submit buttons to show user dropdown
-		const submitButtons = [
-			document.getElementById('feed-submit-btn'),
-			document.getElementById('building-submit-btn'),
-			document.getElementById('about-submit-btn')
-		];
+    // Close modal on backdrop click
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) {
+        backdrop.remove();
+        if (onClose) onClose();
+      }
+    });
 
-		submitButtons.forEach(btn => {
-			if (btn) {
-				// Create a wrapper div for the dropdown
-				const wrapper = document.createElement('div');
-				wrapper.className = 'relative';
-				
-				// Create the button
-				const button = document.createElement('button');
-				button.className = 'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-cyan-300 border border-cyan-500/60 bg-cyan-500/10 backdrop-blur-sm hover:border-cyan-400/60 transition';
-				button.innerHTML = `
+    // Close on Escape key
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        backdrop.remove();
+        if (onClose) onClose();
+        document.removeEventListener("keydown", handleEscape);
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+  }
+
+  // Check for protected routes
+  function checkProtectedRoute() {
+    const protectedRoutes = ["/settings", "/profile"];
+    const currentPath = window.location.pathname;
+    const token = sessionStorage.getItem("authToken");
+
+    const isProtected = protectedRoutes.some((route) =>
+      currentPath.startsWith(route)
+    );
+
+    if (isProtected && !token) {
+      showModal("Please login to access this page", () => {
+        window.location.href = "/auth";
+      });
+    }
+  }
+
+  let searchInitialized = false;
+
+  function initProfileSearch(authToken: string) {
+    if (searchInitialized) return;
+
+    const searchContainers = document.querySelectorAll("[data-profile-search]");
+    if (!searchContainers.length) return;
+
+    searchContainers.forEach((container) => {
+      const element = container as HTMLElement;
+      element.style.removeProperty("display");
+      element.classList.remove("hidden");
+      if (!element.classList.contains("flex")) {
+        element.classList.add("flex");
+      }
+
+      const form = element.querySelector(
+        "[data-profile-search-form]"
+      ) as HTMLFormElement | null;
+      const input = element.querySelector(
+        "[data-profile-search-input]"
+      ) as HTMLInputElement | null;
+      const submitBtn = element.querySelector(
+        "[data-profile-search-submit]"
+      ) as HTMLButtonElement | null;
+      if (!form || !input || !submitBtn) return;
+
+      const defaultLabel = submitBtn.textContent ?? "Go";
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const query = input.value.trim();
+        if (!query) {
+          showModal("Enter a username to search");
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Searching...";
+
+        try {
+          const safeQuery = encodeURIComponent(query);
+          const { default: axios } = await import("axios");
+          await axios.get(
+            `${import.meta.env.PUBLIC_API_BASE_URL}/users/username/${safeQuery}`,
+            {
+              headers: authToken
+                ? {
+                    Authorization: `Bearer ${authToken}`,
+                  }
+                : undefined,
+            }
+          );
+          window.location.href = `/profile/${safeQuery}`;
+        } catch (error) {
+          console.error("Profile search failed:", error);
+          const err = error as { response?: { data?: { message?: string } } };
+          const message =
+            err?.response?.data?.message || "Unable to find that profile";
+          showModal(message);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = defaultLabel;
+        }
+      });
+    });
+
+    searchInitialized = true;
+  }
+
+  function checkAuthAndUpdateButtons() {
+    // Check if we have a token and user info in session storage
+    const token = sessionStorage.getItem("authToken");
+    const username = sessionStorage.getItem("username");
+
+    if (!token || !username) {
+      return;
+    }
+
+    initProfileSearch(token);
+
+    // Update all submit buttons to show user dropdown
+    const submitButtons = [
+      document.getElementById("feed-submit-btn"),
+      document.getElementById("building-submit-btn"),
+      document.getElementById("about-submit-btn"),
+    ];
+
+    submitButtons.forEach((btn) => {
+      if (btn) {
+        // Create a wrapper div for the dropdown
+        const wrapper = document.createElement("div");
+        wrapper.className = "relative";
+
+        // Create the button
+        const button = document.createElement("button");
+        button.className =
+          "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-cyan-300 border border-cyan-500/60 bg-cyan-500/10 backdrop-blur-sm hover:border-cyan-400/60 transition";
+        button.innerHTML = `
 					<span class="h-6 w-6 rounded-full bg-gradient-to-br from-cyan-500/30 to-fuchsia-500/30"></span>
 					@${username}
 				`;
-				
-				// Create the dropdown menu
-				const dropdown = document.createElement('div');
-				dropdown.className = 'absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/90 backdrop-blur-xl shadow-xl hidden';
-				dropdown.innerHTML = `
+
+        // Create the dropdown menu
+        const dropdown = document.createElement("div");
+        dropdown.className =
+          "absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/90 backdrop-blur-xl shadow-xl hidden";
+        dropdown.innerHTML = `
 					<a href="/profile/${username}" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800/40">My Profile</a>
 					<a href="/settings" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800/40">Settings</a>
 					<button id="logout-btn-${btn.id}" class="block w-full px-4 py-2 text-left text-sm text-rose-300 hover:bg-rose-600/10">Log out</button>
 				`;
-				
-				// Toggle dropdown on button click
-				button.addEventListener('click', (e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					dropdown.classList.toggle('hidden');
-				});
-				
-				// Close dropdown when clicking outside
-				document.addEventListener('click', (e) => {
-					if (!wrapper.contains(e.target as Node)) {
-						dropdown.classList.add('hidden');
-					}
-				});
-				
-				// Replace the original button with the wrapper
-				btn.parentNode?.replaceChild(wrapper, btn);
-				wrapper.appendChild(button);
-				wrapper.appendChild(dropdown);
-				
-				// Add logout functionality
-				const logoutBtn = document.getElementById(`logout-btn-${btn.id}`);
-				logoutBtn?.addEventListener('click', async () => {
-					try {
-						const token = sessionStorage.getItem('authToken');
-						const { default: axios } = await import('axios');
-						const resp = await axios.post(`${import.meta.env.PUBLIC_API_BASE_URL}/auth/logout`, {}, {
-							headers: {
-								'Content-Type': 'application/json',
-								'Authorization': `Bearer ${token}`
-							}
-						});
-						const message = resp?.data?.message || 'You have been logged out successfully';
 
-						sessionStorage.clear();
-						showModal(message, () => {
-							window.location.href = '/';
-						});
-					} catch (error) {
-						console.error('Logout API call failed:', error);
-						sessionStorage.clear();
-						showModal('You have been logged out', () => {
-							window.location.href = '/';
-						});
-					}
-				});
-			}
-		});
-	}
+        // Toggle dropdown on button click
+        button.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropdown.classList.toggle("hidden");
+        });
 
-	// Run on page load
-	checkProtectedRoute();
-	checkAuthAndUpdateButtons();
+        // Close dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+          if (!wrapper.contains(e.target as Node)) {
+            dropdown.classList.add("hidden");
+          }
+        });
+
+        // Replace the original button with the wrapper
+        btn.parentNode?.replaceChild(wrapper, btn);
+        wrapper.appendChild(button);
+        wrapper.appendChild(dropdown);
+
+        // Add logout functionality
+        const logoutBtn = document.getElementById(`logout-btn-${btn.id}`);
+        logoutBtn?.addEventListener("click", async () => {
+          try {
+            const token = sessionStorage.getItem("authToken");
+            const { default: axios } = await import("axios");
+            const resp = await axios.post(
+              `${import.meta.env.PUBLIC_API_BASE_URL}/auth/logout`,
+              {},
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            const message =
+              resp?.data?.message || "You have been logged out successfully";
+
+            sessionStorage.clear();
+            showModal(message, () => {
+              window.location.href = "/";
+            });
+          } catch (error) {
+            console.error("Logout API call failed:", error);
+            sessionStorage.clear();
+            showModal("You have been logged out", () => {
+              window.location.href = "/";
+            });
+          }
+        });
+      }
+    });
+  }
+
+  // Run on page load
+  checkProtectedRoute();
+  checkAuthAndUpdateButtons();
 </script>

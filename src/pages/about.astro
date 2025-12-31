@@ -7,60 +7,60 @@ import InteractiveBackground from "../components/InteractiveBackground";
 import { FadeIn, StaggerContainer, StaggerItem, ScaleIn } from "../components/Animations";
 
 const stats = [
-  { label: "Active Builders", value: "2.4K" },
-  { label: "Projects Shipped", value: "680" },
-  { label: "Code Hours", value: "12K+" },
+  { label: "Daily Ship Logs", value: "4.1K" },
+  { label: "Build Threads", value: "980" },
+  { label: "Verified Repos", value: "3.6K" },
 ];
 
 const features = [
   {
-    title: "Showcase Projects",
-    description: "Share your work with a community that gets it. Real builders, real feedback.",
+    title: "Ship Notes & Updates",
+    description: "Post context-rich changelog entries with links, screenshots, and tech stack tags.",
   },
   {
-    title: "Vote & Discover",
-    description: "Upvote the best projects. Let quality rise to the top organically.",
+    title: "Show Build Timeline",
+    description: "Timeline view lets people replay your product arc from first commit to launch.",
   },
   {
-    title: "GitHub Integration",
-    description: "One-click auth with GitHub. Your repos, your projects, your story.",
+    title: "Signal-Boost Launches",
+    description: "Schedule launch posts, collect votes, and route curious people to your live demo.",
   },
 ];
 
 const howItWorks = [
   {
     step: "01",
-    title: "Connect Your Account",
-    description: "Authenticate with GitHub or GitLab. We only need read access to your public repos.",
+    title: "Connect With GitHub",
+    description: "Secure OAuth pulls your public repos and lets you pick what appears on your profile.",
   },
   {
     step: "02",
-    title: "Share Your Work",
-    description: "Select projects to showcase. Add context, tech stack, and what you learned.",
+    title: "Craft Your Build Log",
+    description: "Use the editor to add milestones, embed media, and tag the stack behind each feature.",
   },
   {
     step: "03",
-    title: "Get Discovered",
-    description: "Community votes on projects. Quality work rises. Build your reputation.",
+    title: "Publish & Engage",
+    description: "Go live, request votes, invite collaborators, and reply to comments in one place.",
   },
 ];
 
 const benefits = [
   {
-    title: "Portfolio That Works",
-    description: "No more static portfolio sites. Show live projects synced from your repos.",
+    title: "Own Your Builder Profile",
+    description: "Rich profile pulls commits, streaks, and highlights so hiring managers see proof, not claims.",
   },
   {
-    title: "Real Feedback",
-    description: "Get feedback from developers who actually build. Not just likes, real insights.",
+    title: "Host Launch Rooms",
+    description: "Spin up a launch room with live chat, pinned links, and post-launch updates.",
   },
   {
-    title: "Discover Talent",
-    description: "Hiring? Find developers based on what they've shipped, not just resumes.",
+    title: "Track Interest",
+    description: "Analytics show who viewed, followed, or clipped your project so you can follow up.",
   },
   {
-    title: "Stay Motivated",
-    description: "Track your streak, see your progress, and stay accountable to shipping.",
+    title: "Team Buildspaces",
+    description: "Invite teammates, assign roles, and maintain a shared roadmap visible to your followers.",
   },
 ];
 ---
@@ -94,13 +94,13 @@ const benefits = [
             class="mb-6 max-w-4xl text-4xl leading-tight tracking-tight sm:text-5xl lg:text-5xl" 
             id="locked-in-heading"
           >
-            Where <span class="text-cyan-400 font-sans">builders</span> showcase their craft
+            Explain every ship, milestone, and win on one living portfolio
           </h1>
         </FadeIn>
 				
         <FadeIn delay={0.2} client:load>
           <p class="mb-10 max-w-2xl text-lg text-slate-300 sm:text-xl">
-            A social platform for developers. Share projects, get upvoted, build your reputation. GitHub & GitLab auth only.
+            LockedIn is the builder homepage. Import repos, run public build logs, collect votes, and point people straight to what you shipped today.
           </p>
         </FadeIn>
 				
@@ -140,9 +140,9 @@ const benefits = [
       <section id="features" class="mb-32">
         <FadeIn client:load>
           <div class="mb-12 text-center">
-            <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">Built for builders</h2>
+            <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">What you can do here</h2>
             <p class="mx-auto max-w-2xl text-slate-400">
-              Focus on what matters. Showcase your work, discover great projects, and connect with developers who ship.
+              Every interaction is designed for shipping: publish build notes, showcase timelines, host launch rooms, and discover the next collab.
             </p>
           </div>
         </FadeIn>
@@ -162,7 +162,7 @@ const benefits = [
           <div class="mb-16 text-center">
             <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">How it works</h2>
             <p class="mx-auto max-w-2xl text-slate-400">
-              Get started in minutes. No complicated setup, just connect and ship.
+              LockedIn keeps everything async: connect, document, and publish without leaving your workflow.
             </p>
           </div>
         </FadeIn>
@@ -186,9 +186,9 @@ const benefits = [
       <section class="mb-32">
         <FadeIn client:load>
           <div class="mb-12 text-center">
-            <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">Why LockedIn?</h2>
+            <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">Why builders stay</h2>
             <p class="mx-auto max-w-2xl text-slate-400">
-              More than just a portfolio. A platform built for developers who actually ship.
+              We obsess over momentum. These tools keep you shipping in public without the busywork.
             </p>
           </div>
         </FadeIn>
@@ -211,13 +211,13 @@ const benefits = [
           <div class="rounded-3xl border border-slate-800/50 bg-slate-900/30 p-8 backdrop-blur-sm sm:p-12">
             <div class="text-center">
               <p class="mb-6 text-2xl font-semibold italic text-slate-300 sm:text-3xl">
-                "Finally, a platform that gets it. No fluff, just projects and people who build."
+                "Every launch now has context. Investors and collaborators can replay exactly how we built."
               </p>
               <div class="flex items-center justify-center gap-3">
                 <div class="h-12 w-12 rounded-full bg-linear-to-br from-cyan-400 to-pink-500"></div>
                 <div class="text-left">
-                  <p class="font-semibold text-slate-200">Alex Chen</p>
-                  <p class="text-sm text-slate-400">Full-Stack Developer</p>
+                  <p class="font-semibold text-slate-200">Morgan Reyes</p>
+                  <p class="text-sm text-slate-400">Indie SaaS Founder</p>
                 </div>
               </div>
             </div>
@@ -229,10 +229,10 @@ const benefits = [
       <ScaleIn client:load>
         <section id="community" class="mb-20 rounded-3xl border border-slate-800/50 bg-slate-900/30 p-12 text-center backdrop-blur-sm sm:p-16">
           <h2 class="mb-4 text-3xl font-bold text-slate-100 sm:text-4xl">
-            Ready to ship?
+            Tell the full build story.
           </h2>
           <p class="mb-8 text-lg text-slate-300">
-            Join the community of builders making things happen.
+            Join thousands of engineers logging progress, launching faster, and getting noticed.
           </p>
           <a
             href="/auth"
