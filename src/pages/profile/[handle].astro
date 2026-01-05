@@ -4,7 +4,7 @@ import Navbar from "../../components/Navbar.astro";
 import ProjectStack from "../../components/ProjectStack";
 import { FadeIn, StaggerContainer, StaggerItem } from "../../components/Animations";
 import type { Project } from "../../components/ProjectStack";
-import { Loader } from "lucide-react";
+import { Loader, Pencil } from "lucide-react";
 
 const { params } = Astro;
 const handle = params.handle ?? "rex";
@@ -48,25 +48,25 @@ const profile = { username: handle };
       <section class="mb-10">
         <StaggerContainer client:load className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StaggerItem>
-            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
+            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center cursor-pointer hover:border-slate-700/60 transition-colors" data-scroll-to="posts">
               <p class="text-xs uppercase tracking-wide text-slate-400">Posts</p>
               <p id="stat-posts" class="mt-1 text-xl font-semibold text-slate-100">—</p>
             </div>
           </StaggerItem>
           <StaggerItem>
-            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
+            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center cursor-pointer hover:border-slate-700/60 transition-colors" data-scroll-to="comments">
               <p class="text-xs uppercase tracking-wide text-slate-400">Comments</p>
               <p id="stat-comments" class="mt-1 text-xl font-semibold text-slate-100">—</p>
             </div>
           </StaggerItem>
           <StaggerItem>
-            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
+            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center cursor-pointer">
               <p class="text-xs uppercase tracking-wide text-slate-400">Followers</p>
               <p id="stat-followers" class="mt-1 text-xl font-semibold text-slate-100">—</p>
             </div>
           </StaggerItem>
           <StaggerItem>
-            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
+            <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center cursor-pointer">
               <p class="text-xs uppercase tracking-wide text-slate-400">Following</p>
               <p id="stat-following" class="mt-1 text-xl font-semibold text-slate-100">—</p>
             </div>
@@ -75,23 +75,44 @@ const profile = { username: handle };
       </section>
 
       <!-- Account Details -->
-      <!-- <section class="mb-10">
+      <section class="mb-10">
         <FadeIn client:load>
           <div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6">
             <h2 class="mb-4 text-lg font-semibold text-slate-100">Account Details</h2>
             <dl class="grid gap-4 sm:grid-cols-2">
               <div class="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
-                <dt class="text-xs uppercase tracking-wide text-slate-400">Email</dt>
-                <dd id="detail-email" class="mt-1 text-sm text-slate-100 wrap-break-word">Loading...</dd>
+                <dt class="text-xs uppercase tracking-wide text-slate-400 flex items-center justify-between">
+                  <span>Email</span>
+                  <button id="edit-email-btn" type="button" class="text-slate-400 hover:text-slate-200 transition-colors" aria-label="Edit email">
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </dt>
+                <dd id="detail-email" class="mt-1 text-sm text-slate-100 wrap-break-word"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></dd>
+                <div id="email-edit-form" class="mt-2 hidden">
+                  <input 
+                    type="email" 
+                    id="email-input" 
+                    class="w-full rounded-lg border border-slate-700/60 bg-slate-950/40 px-3 py-1.5 text-sm text-slate-100 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+                    placeholder="Enter email"
+                  />
+                  <div class="mt-2 flex gap-2">
+                    <button id="save-email-btn" type="button" class="rounded-md bg-cyan-600/80 px-3 py-1 text-xs font-medium text-white hover:bg-cyan-600 transition-colors">
+                      Save
+                    </button>
+                    <button id="cancel-email-btn" type="button" class="rounded-md bg-slate-700/60 px-3 py-1 text-xs font-medium text-slate-200 hover:bg-slate-700 transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               </div>
               <div class="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
                 <dt class="text-xs uppercase tracking-wide text-slate-400">Role</dt>
-                <dd id="detail-role" class="mt-1 text-sm text-slate-100 wrap-break-word">Loading...</dd>
+                <dd id="detail-role" class="mt-1 text-sm text-slate-100 wrap-break-word"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></dd>
               </div>
             </dl>
           </div>
         </FadeIn>
-      </section> -->
+      </section>
 
       <!-- Tech Stack Tags -->
       <section class="mb-12">
@@ -106,7 +127,7 @@ const profile = { username: handle };
       </section>
 
       <!-- Projects Stack -->
-      <section>
+      <section id="posts-section">
         <div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6 backdrop-blur-xl">
           <div class="mb-6 flex items-center gap-2 rounded-lg border border-slate-800/50 bg-slate-950/40 p-1">
             <button type="button" id="tab-posts" class="profile-tab flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all bg-slate-800/60 text-slate-100">
@@ -267,6 +288,111 @@ const profile = { username: handle };
     postsTab?.addEventListener('click', () => setActiveTab('posts'));
     commentsTab?.addEventListener('click', () => setActiveTab('comments'));
     setActiveTab('posts');
+
+    // Email editing logic
+    const editEmailBtn = document.getElementById('edit-email-btn');
+    const emailDisplay = document.getElementById('detail-email');
+    const emailEditForm = document.getElementById('email-edit-form');
+    const emailInput = document.getElementById('email-input') as HTMLInputElement;
+    const saveEmailBtn = document.getElementById('save-email-btn');
+    const cancelEmailBtn = document.getElementById('cancel-email-btn');
+
+    let currentEmail = '';
+
+    editEmailBtn?.addEventListener('click', () => {
+      if (emailDisplay && emailEditForm && emailInput) {
+        currentEmail = emailDisplay.textContent || '';
+        emailInput.value = currentEmail;
+        emailDisplay.classList.add('hidden');
+        emailEditForm.classList.remove('hidden');
+        emailInput.focus();
+      }
+    });
+
+    cancelEmailBtn?.addEventListener('click', () => {
+      if (emailDisplay && emailEditForm) {
+        emailEditForm.classList.add('hidden');
+        emailDisplay.classList.remove('hidden');
+      }
+    });
+
+    saveEmailBtn?.addEventListener('click', async () => {
+      if (!emailInput || !emailDisplay || !emailEditForm) return;
+
+      const newEmail = emailInput.value.trim();
+      if (!newEmail) {
+        alert('Email cannot be empty');
+        return;
+      }
+
+      const token = sessionStorage.getItem('authToken');
+      if (!token) {
+        alert('You must be logged in to update email');
+        return;
+      }
+
+      try {
+        saveEmailBtn.textContent = 'Saving...';
+        saveEmailBtn.setAttribute('disabled', 'true');
+
+        const response = await fetch(`${baseUrl}/users/update`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ email: newEmail }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Update display
+        emailDisplay.textContent = newEmail;
+        currentEmail = newEmail;
+        
+        // Update email link if visible
+        const emailLink = document.getElementById('email-link');
+        const profileEmail = document.getElementById('profile-email');
+        if (emailLink) emailLink.setAttribute('href', `mailto:${newEmail}`);
+        if (profileEmail) profileEmail.textContent = newEmail;
+
+        emailEditForm.classList.add('hidden');
+        emailDisplay.classList.remove('hidden');
+
+        console.log('Email updated successfully');
+      } catch (error: any) {
+        console.error('Failed to update email:', error);
+        alert(`Failed to update email: ${error.message}`);
+      } finally {
+        saveEmailBtn.textContent = 'Save';
+        saveEmailBtn.removeAttribute('disabled');
+      }
+    });
+
+    // Stat card click handlers for scrolling
+    document.querySelectorAll('[data-scroll-to]').forEach(card => {
+      card.addEventListener('click', () => {
+        const target = card.getAttribute('data-scroll-to');
+        const postsSection = document.getElementById('posts-section');
+        
+        if (postsSection) {
+          postsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          
+          // Switch to the appropriate tab after a short delay
+          setTimeout(() => {
+            if (target === 'posts') {
+              setActiveTab('posts');
+            } else if (target === 'comments') {
+              setActiveTab('comments');
+            }
+          }, 300);
+        }
+      });
+    });
 
     // Load profile data
     loadProfile();
