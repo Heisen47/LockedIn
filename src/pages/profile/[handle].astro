@@ -4,6 +4,7 @@ import Navbar from "../../components/Navbar.astro";
 import ProjectStack from "../../components/ProjectStack";
 import { FadeIn, StaggerContainer, StaggerItem } from "../../components/Animations";
 import type { Project } from "../../components/ProjectStack";
+import { Loader } from "lucide-react";
 
 const { params } = Astro;
 const handle = params.handle ?? "rex";
@@ -27,7 +28,7 @@ const profile = { username: handle };
                 <h1 id="profile-username" class="text-2xl font-bold sm:text-3xl">{handle}</h1>
                 <p id="profile-handle" class="text-slate-400">@{handle}</p>
                 <p id="profile-email" class="text-xs text-slate-500 hidden"></p>
-                <p id="profile-bio" class="mt-2 max-w-2xl text-sm text-slate-300">Loading...</p>
+                <p id="profile-bio" class="mt-2 max-w-2xl text-sm text-slate-300"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></p>
                 <p id="profile-error" class="mt-2 text-xs text-amber-400 hidden"></p>
               </div>
             </div>
@@ -36,7 +37,7 @@ const profile = { username: handle };
                 Email
               </a>
               <span id="profile-role-badge" class="rounded-xl border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5 text-xs text-slate-200">
-                Role: USER
+                <Loader className="inline-block h-3 w-3 animate-spin text-slate-400" />
               </span>
             </div>
           </div>
@@ -60,21 +61,21 @@ const profile = { username: handle };
           </StaggerItem>
           <StaggerItem>
             <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
-              <p class="text-xs uppercase tracking-wide text-slate-400">Joined</p>
-              <p id="stat-joined" class="mt-1 text-xl font-semibold text-slate-100">—</p>
+              <p class="text-xs uppercase tracking-wide text-slate-400">Followers</p>
+              <p id="stat-followers" class="mt-1 text-xl font-semibold text-slate-100">—</p>
             </div>
           </StaggerItem>
           <StaggerItem>
             <div class="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-4 text-center">
-              <p class="text-xs uppercase tracking-wide text-slate-400">Updated</p>
-              <p id="stat-updated" class="mt-1 text-xl font-semibold text-slate-100">—</p>
+              <p class="text-xs uppercase tracking-wide text-slate-400">Following</p>
+              <p id="stat-following" class="mt-1 text-xl font-semibold text-slate-100">—</p>
             </div>
           </StaggerItem>
         </StaggerContainer>
       </section>
 
       <!-- Account Details -->
-      <section class="mb-10">
+      <!-- <section class="mb-10">
         <FadeIn client:load>
           <div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6">
             <h2 class="mb-4 text-lg font-semibold text-slate-100">Account Details</h2>
@@ -87,18 +88,10 @@ const profile = { username: handle };
                 <dt class="text-xs uppercase tracking-wide text-slate-400">Role</dt>
                 <dd id="detail-role" class="mt-1 text-sm text-slate-100 wrap-break-word">Loading...</dd>
               </div>
-              <div class="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
-                <dt class="text-xs uppercase tracking-wide text-slate-400">Account ID</dt>
-                <dd id="detail-id" class="mt-1 text-sm text-slate-100 wrap-break-word">Loading...</dd>
-              </div>
-              <div class="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
-                <dt class="text-xs uppercase tracking-wide text-slate-400">Last Updated</dt>
-                <dd id="detail-updated" class="mt-1 text-sm text-slate-100 wrap-break-word">Loading...</dd>
-              </div>
             </dl>
           </div>
         </FadeIn>
-      </section>
+      </section> -->
 
       <!-- Tech Stack Tags -->
       <section class="mb-12">
@@ -106,7 +99,7 @@ const profile = { username: handle };
           <div class="rounded-3xl border border-slate-800/60 bg-slate-900/30 p-6">
             <h2 class="mb-3 text-lg font-semibold text-slate-100">Tech Stack</h2>
             <div id="tech-stack-container" class="flex flex-wrap gap-2">
-              <p class="text-sm text-slate-400">Loading...</p>
+              <p class="text-sm text-slate-400"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></p>
             </div>
           </div>
         </FadeIn>
@@ -191,24 +184,22 @@ const profile = { username: handle };
         }
 
         // Update stats
-        const joinedDate = profile.createdAt ? new Date(profile.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—';
-        const updatedDate = profile.updatedAt ? new Date(profile.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
-
         const statPosts = document.getElementById('stat-posts');
         const statComments = document.getElementById('stat-comments');
-        const statJoined = document.getElementById('stat-joined');
-        const statUpdated = document.getElementById('stat-updated');
+        const statFollowers = document.getElementById('stat-followers');
+        const statFollowing = document.getElementById('stat-following');
 
         if (statPosts) statPosts.textContent = String(profile.postsCount ?? 0);
         if (statComments) statComments.textContent = String(profile.commentsCount ?? 0);
-        if (statJoined) statJoined.textContent = joinedDate;
-        if (statUpdated) statUpdated.textContent = updatedDate;
+        if (statFollowers) statFollowers.textContent = String(profile.followersCount ?? 0);
+        if (statFollowing) statFollowing.textContent = String(profile.followingCount ?? 0);
 
         // Update account details
         const detailEmail = document.getElementById('detail-email');
         const detailRole = document.getElementById('detail-role');
         const detailId = document.getElementById('detail-id');
         const detailUpdated = document.getElementById('detail-updated');
+        const updatedDate = profile.updatedAt ? new Date(profile.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
         if (detailEmail) detailEmail.textContent = profile.email || 'Not provided';
         if (detailRole) detailRole.textContent = profile.role || 'USER';
@@ -239,11 +230,11 @@ const profile = { username: handle };
         if (bioEl) bioEl.textContent = "This builder hasn't written a bio yet.";
 
         // Set fallback values
-        document.querySelectorAll('#stat-posts, #stat-comments').forEach(el => el.textContent = '0');
+        document.querySelectorAll('#stat-posts, #stat-comments, #stat-followers, #stat-following').forEach(el => el.textContent = '0');
         document.querySelectorAll('#detail-email').forEach(el => el.textContent = 'Not provided');
         document.querySelectorAll('#detail-role').forEach(el => el.textContent = 'USER');
         document.querySelectorAll('#detail-id').forEach(el => el.textContent = 'Unavailable');
-        document.querySelectorAll('#detail-updated, #stat-joined, #stat-updated').forEach(el => el.textContent = '—');
+        document.querySelectorAll('#detail-updated').forEach(el => el.textContent = '—');
         const techContainer = document.getElementById('tech-stack-container');
         if (techContainer) techContainer.innerHTML = '<p class="text-sm text-slate-400">No tech stack listed yet.</p>';
       }
