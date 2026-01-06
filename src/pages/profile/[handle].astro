@@ -28,7 +28,30 @@ const profile = { username: handle };
                 <h1 id="profile-username" class="text-2xl font-bold sm:text-3xl">{handle}</h1>
                 <p id="profile-handle" class="text-slate-400">@{handle}</p>
                 <p id="profile-email" class="text-xs text-slate-500 hidden"></p>
-                <p id="profile-bio" class="mt-2 max-w-2xl text-sm text-slate-300"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></p>
+                <div class="mt-2 max-w-2xl">
+                  <div class="flex items-start gap-2">
+                    <p id="profile-bio" class="text-sm text-slate-300 flex-1"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></p>
+                    <button id="edit-bio-btn" type="button" class="text-slate-400 hover:text-slate-200 transition-colors" aria-label="Edit bio">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <div id="bio-edit-form" class="mt-2 hidden">
+                    <textarea
+                      id="bio-input"
+                      rows="3"
+                      class="w-full rounded-lg border border-slate-700/60 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 resize-none"
+                      placeholder="Write your bio..."
+                    ></textarea>
+                    <div class="mt-2 flex gap-2">
+                      <button id="save-bio-btn" type="button" class="rounded-md bg-cyan-600/80 px-3 py-1 text-xs font-medium text-white hover:bg-cyan-600 transition-colors">
+                        Save
+                      </button>
+                      <button id="cancel-bio-btn" type="button" class="rounded-md bg-slate-700/60 px-3 py-1 text-xs font-medium text-slate-200 hover:bg-slate-700 transition-colors">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
                 <p id="profile-error" class="mt-2 text-xs text-amber-400 hidden"></p>
               </div>
             </div>
@@ -156,6 +179,8 @@ const profile = { username: handle };
   </main>
 
   <script>
+    import { api } from '../../lib/api';
+
     const handle = document.querySelector('[data-profile-handle]')?.getAttribute('data-profile-handle') || '';
     const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
 
@@ -335,20 +360,7 @@ const profile = { username: handle };
         saveEmailBtn.textContent = 'Saving...';
         saveEmailBtn.setAttribute('disabled', 'true');
 
-        const response = await fetch(`${baseUrl}/users/update`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ email: newEmail }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
+        const response = await api.put(`/users/${handle}`, { email: newEmail });
         
         // Update display
         emailDisplay.textContent = newEmail;
@@ -370,6 +382,67 @@ const profile = { username: handle };
       } finally {
         saveEmailBtn.textContent = 'Save';
         saveEmailBtn.removeAttribute('disabled');
+      }
+    });
+
+    // Bio editing logic
+    const editBioBtn = document.getElementById('edit-bio-btn');
+    const bioDisplay = document.getElementById('profile-bio');
+    const bioEditForm = document.getElementById('bio-edit-form');
+    const bioInput = document.getElementById('bio-input') as HTMLTextAreaElement;
+    const saveBioBtn = document.getElementById('save-bio-btn');
+    const cancelBioBtn = document.getElementById('cancel-bio-btn');
+
+    let currentBio = '';
+
+    editBioBtn?.addEventListener('click', () => {
+      if (bioDisplay && bioEditForm && bioInput) {
+        currentBio = bioDisplay.textContent || '';
+        bioInput.value = currentBio === "This builder hasn't written a bio yet." ? '' : currentBio;
+        bioDisplay.classList.add('hidden');
+        bioEditForm.classList.remove('hidden');
+        bioInput.focus();
+      }
+    });
+
+    cancelBioBtn?.addEventListener('click', () => {
+      if (bioDisplay && bioEditForm) {
+        bioEditForm.classList.add('hidden');
+        bioDisplay.classList.remove('hidden');
+      }
+    });
+
+    saveBioBtn?.addEventListener('click', async () => {
+      if (!bioInput || !bioDisplay || !bioEditForm) return;
+
+      const newBio = bioInput.value.trim();
+
+      const token = sessionStorage.getItem('authToken');
+      if (!token) {
+        alert('You must be logged in to update bio');
+        return;
+      }
+
+      try {
+        saveBioBtn.textContent = 'Saving...';
+        saveBioBtn.setAttribute('disabled', 'true');
+
+        const response = await api.put(`/users/${handle}`, { bio: newBio });
+        
+        // Update display
+        bioDisplay.textContent = newBio || "This builder hasn't written a bio yet.";
+        currentBio = newBio;
+
+        bioEditForm.classList.add('hidden');
+        bioDisplay.classList.remove('hidden');
+
+        console.log('Bio updated successfully');
+      } catch (error: any) {
+        console.error('Failed to update bio:', error);
+        alert(`Failed to update bio: ${error.message}`);
+      } finally {
+        saveBioBtn.textContent = 'Save';
+        saveBioBtn.removeAttribute('disabled');
       }
     });
 
