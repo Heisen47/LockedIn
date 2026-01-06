@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <div className="mb-4 flex items-center gap-3">
-              <span className="h-2 w-2 rounded-full bg-gradient-to-br from-cyan-400 to-pink-500 shadow-[0_0_12px_rgba(236,72,153,0.5)]"></span>
+              <span className="h-2 w-2 rounded-full bg-linear-to-br from-cyan-400 to-pink-500 shadow-[0_0_12px_rgba(236,72,153,0.5)]"></span>
               <span className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-100">
                 LockedIn
               </span>
