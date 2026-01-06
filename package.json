@@ -13,11 +13,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@astrojs/react": "^4.4.0",
+    "@astrojs/react": "^4.4.2",
     "@tailwindcss/vite": "^4.1.16",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "astro": "^5.15.1",
+    "astro": "^5.16.6",
     "axios": "^1.13.2",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.474.0",
@@ -31,6 +31,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/ui": "^4.0.9",
+    "baseline-browser-mapping": "^2.9.11",
     "happy-dom": "^20.0.10",
     "jsdom": "^27.2.0",
     "vitest": "^4.0.9"

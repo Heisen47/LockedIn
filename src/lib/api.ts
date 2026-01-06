@@ -108,8 +108,8 @@ class ApiClient {
 
   private clearTokens(): void {
     if (typeof window === 'undefined') return;
-    sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('refreshToken');
+    // sessionStorage.removeItem('authToken');
+    // sessionStorage.removeItem('refreshToken');
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {

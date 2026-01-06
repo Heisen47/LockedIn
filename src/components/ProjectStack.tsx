@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 import VoteButtons from "./VoteButtons";
 import TagList from "./TagList";
 import CommentBox from "./CommentBox";
@@ -12,22 +13,111 @@ export interface Project {
   status: "live" | "building";
   score?: number;
   comments?: { id: string; author: string; text: string }[];
-  // Optional GitHub/meta stats
-  durationDays?: number; // duration from first commit to latest, in days
+  durationDays?: number; 
   stars?: number;
   forks?: number;
-  createdAt?: string | number | Date; // when the post was made
+  createdAt?: string | number | Date; 
 }
 
 interface Props {
   user: { name: string; handle: string; avatar?: string };
   projects: Project[];
-  showFollow?: boolean; // whether to show the Follow button in header (defaults to true)
+  showFollow?: boolean; 
+  initiallyFollowing?: boolean;
 }
 
-export default function ProjectStack({ user, projects, showFollow = true }: Props) {
+const normalizeHandle = (handle?: string | null) => (handle ? handle.toLowerCase() : null);
+const getFollowStorageKey = (handle?: string | null) => (handle ? `following:${handle}` : null);
+const getFollowListStorageKey = (viewerHandle?: string | null) => (viewerHandle ? `following:list:${viewerHandle}` : null);
+
+const parseStoredHandleList = (raw: string | null): string[] => {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((value): value is string => typeof value === "string").map((value) => value.toLowerCase())
+      : [];
+  } catch {
+    return [];
+  }
+};
+
+const extractHandlesFromPayload = (payload: unknown): string[] => {
+  const pickHandle = (entry: any): string | null => {
+    if (!entry) return null;
+    if (typeof entry === "string") return entry;
+    if (typeof entry === "object") {
+      return (
+        entry.handle ||
+        entry.username ||
+        entry.name ||
+        entry.user?.handle ||
+        entry.user?.username ||
+        null
+      );
+    }
+    return null;
+  };
+
+  const fromArray = (arr: any[]): string[] => {
+    const seen = new Set<string>();
+    arr.forEach((item) => {
+      const handle = pickHandle(item);
+      if (!handle) return;
+      const normalized = handle.toLowerCase();
+      if (!seen.has(normalized)) {
+        seen.add(normalized);
+      }
+    });
+    return Array.from(seen);
+  };
+
+  if (Array.isArray(payload)) return fromArray(payload);
+  if (payload && typeof payload === "object") {
+    const data = payload as Record<string, unknown>;
+    if (Array.isArray(data.following)) return fromArray(data.following as any[]);
+    if (Array.isArray(data.data)) return fromArray(data.data as any[]);
+  }
+  return [];
+};
+
+const updateFollowListCache = (viewerHandle: string | null, targetHandle: string | null, shouldFollow: boolean) => {
+  if (!targetHandle || typeof window === "undefined") return;
+
+  const followKey = getFollowStorageKey(targetHandle);
+  if (followKey) {
+    if (shouldFollow) {
+      sessionStorage.setItem(followKey, "true");
+    } else {
+      sessionStorage.removeItem(followKey);
+    }
+  }
+
+  const listKey = getFollowListStorageKey(viewerHandle);
+  if (!listKey) return;
+
+  const currentHandles = parseStoredHandleList(sessionStorage.getItem(listKey));
+  const hasHandle = currentHandles.includes(targetHandle);
+  let nextHandles = currentHandles;
+
+  if (shouldFollow && !hasHandle) {
+    nextHandles = [...currentHandles, targetHandle];
+  } else if (!shouldFollow && hasHandle) {
+    nextHandles = currentHandles.filter((handle) => handle !== targetHandle);
+  }
+
+  sessionStorage.setItem(listKey, JSON.stringify(nextHandles));
+};
+
+export default function ProjectStack({ user, projects, showFollow = true, initiallyFollowing = false }: Props) {
+  const sortedProjects = useMemo(() => {
+    return [...projects].sort((a, b) => toTimestamp(b.createdAt) - toTimestamp(a.createdAt));
+  }, [projects]);
   const [index, setIndex] = useState(0);
-  const [following, setFollowing] = useState(false);
+  const [following, setFollowing] = useState(initiallyFollowing);
+  const [isSelf, setIsSelf] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followError, setFollowError] = useState<string | null>(null);
   const [awarded, setAwarded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -35,8 +125,8 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const count = projects.length;
-  const current = count > 0 ? projects[index] : undefined;
+  const count = sortedProjects.length;
+  const current = count > 0 ? sortedProjects[index] : undefined;
 
   const next = () => {
     if (count === 0) return;
@@ -67,6 +157,177 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const targetHandle = normalizeHandle(user.handle);
+    const viewerHandle = normalizeHandle(sessionStorage.getItem("username"));
+    const listKey = getFollowListStorageKey(viewerHandle);
+    const listHandles = parseStoredHandleList(listKey ? sessionStorage.getItem(listKey) : null);
+    const fromList = targetHandle ? listHandles.includes(targetHandle) : false;
+    const followKey = getFollowStorageKey(targetHandle);
+    const storedFlag = followKey ? sessionStorage.getItem(followKey) === "true" : false;
+
+    if (initiallyFollowing || fromList || storedFlag) {
+      if (followKey) {
+        sessionStorage.setItem(followKey, "true");
+      }
+      setFollowing(true);
+    } else {
+      setFollowing(false);
+    }
+  }, [initiallyFollowing, user.handle]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      setIsSelf(false);
+      return;
+    }
+    const loggedInHandle = normalizeHandle(sessionStorage.getItem("username"));
+    setIsSelf(Boolean(loggedInHandle && normalizeHandle(user.handle) === loggedInHandle));
+  }, [user.handle]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !showFollow) return;
+
+    const viewerHandle = normalizeHandle(sessionStorage.getItem("username"));
+    const token = sessionStorage.getItem("authToken");
+    if (!viewerHandle || !token) return;
+
+    let cancelled = false;
+
+    const syncFollowings = async () => {
+      try {
+        const base = (import.meta.env.PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
+        const endpoint = base
+          ? `${base}/v1/users/${encodeURIComponent(viewerHandle)}/following`
+          : `/v1/users/${encodeURIComponent(viewerHandle)}/following`;
+        const { data } = await axios.get(endpoint, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (cancelled) return;
+
+        const handles = extractHandlesFromPayload(data);
+        const listKey = getFollowListStorageKey(viewerHandle);
+        if (listKey) {
+          sessionStorage.setItem(listKey, JSON.stringify(handles));
+        }
+        handles.forEach((handle) => {
+          const key = getFollowStorageKey(handle);
+          if (key) sessionStorage.setItem(key, "true");
+        });
+
+        const targetHandle = normalizeHandle(user.handle);
+        if (targetHandle) {
+          const isFollowingTarget = initiallyFollowing || handles.includes(targetHandle);
+          setFollowing(isFollowingTarget);
+          if (!isFollowingTarget) {
+            const key = getFollowStorageKey(targetHandle);
+            if (key) sessionStorage.removeItem(key);
+          }
+        }
+      } catch (error) {
+        console.error("Unable to refresh following list:", error);
+      }
+    };
+
+    void syncFollowings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showFollow, user.handle, initiallyFollowing]);
+
+  const handleFollow = async () => {
+    if (following || followLoading || isSelf) return;
+    setFollowError(null);
+
+    const token = typeof window !== "undefined" ? sessionStorage.getItem("authToken") : null;
+    if (!token) {
+      setFollowError("Log in to follow others.");
+      return;
+    }
+
+    const username = user.handle;
+    if (!username) {
+      setFollowError("Unable to find user handle.");
+      return;
+    }
+
+    const base = (import.meta.env.PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
+    const endpoint = base ? `${base}/v1/users/${encodeURIComponent(username)}/follow` : `/v1/users/${encodeURIComponent(username)}/follow`;
+
+    try {
+      setFollowLoading(true);
+      await axios.post(
+        endpoint,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setFollowing(true);
+      const viewerHandle = normalizeHandle(sessionStorage.getItem("username"));
+      updateFollowListCache(viewerHandle, normalizeHandle(username), true);
+    } catch (error) {
+      const message =
+        (error as any)?.response?.data?.error ||
+        (error as Error)?.message ||
+        "Unable to follow user.";
+      setFollowError(message);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!following || followLoading || isSelf) return;
+    setFollowError(null);
+
+    const token = typeof window !== "undefined" ? sessionStorage.getItem("authToken") : null;
+    if (!token) {
+      setFollowError("Log in to manage follows.");
+      return;
+    }
+
+    const username = user.handle;
+    if (!username) {
+      setFollowError("Unable to find user handle.");
+      return;
+    }
+
+    const base = (import.meta.env.PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
+    const endpoint = base
+      ? `${base}/v1/users/${encodeURIComponent(username)}/unfollow`
+      : `/v1/users/${encodeURIComponent(username)}/unfollow`;
+
+    try {
+      setFollowLoading(true);
+      await axios.delete(endpoint, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setFollowing(false);
+      const viewerHandle = normalizeHandle(sessionStorage.getItem("username"));
+      updateFollowListCache(viewerHandle, normalizeHandle(username), false);
+    } catch (error) {
+      const message =
+        (error as any)?.response?.data?.error ||
+        (error as Error)?.message ||
+        "Unable to unfollow user.";
+      setFollowError(message);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   return (
     <div className="relative">
       {/* Header */}
@@ -77,20 +338,21 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
             <p className="text-sm font-semibold text-slate-200">{user.name}</p>
             <p className="text-xs text-slate-400">@{user.handle}</p>
           </div>
-          {showFollow && (
+          {showFollow && !isSelf && (
             <motion.button
               type="button"
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setFollowing((f) => !f)}
+              whileTap={{ scale: followLoading ? 1 : 0.98 }}
+              onClick={following ? handleUnfollow : handleFollow}
+              disabled={followLoading}
               className={`ml-2 rounded-full border px-4 py-1.5 text-sm transition ${
                 following
-                  ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                  ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300 hover:border-cyan-400/60"
                   : "border-slate-700/60 bg-slate-900/40 text-slate-300 hover:border-slate-600/60"
-              }`}
+              } ${followLoading ? "opacity-60" : ""}`}
               aria-pressed={following}
               aria-label={following ? "Unfollow" : "Follow"}
             >
-              {following ? "Following" : "Follow"}
+              {followLoading ? "Please wait..." : following ? "Following" : "Follow"}
             </motion.button>
           )}
         </div>
@@ -159,6 +421,11 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
           )}
         </div>
       </div>
+      {followError && (
+        <p className="-mt-2 mb-3 text-xs text-rose-400" role="status">
+          {followError}
+        </p>
+      )}
 
       {/* Stack visualization */}
       <div className="relative h-[420px]">
@@ -169,7 +436,7 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
         ) : (
           [2, 1, 0].map((offset) => {
             const i = (index + offset) % count;
-            const p = projects[i];
+            const p = sortedProjects[i];
             const depth = 2 - offset; // 0 back ... 2 front
             const isFront = offset === 0;
 
@@ -262,7 +529,7 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
                   </div>
 
                   <div className="flex items-center justify-between gap-4">
-                    <VoteButtons initial={p.score ?? 0} />
+                    <VoteButtons initial={p.score ?? 0} postId={p.id} />
                     <div className="flex gap-2">
                       <button
                         onClick={prev}
@@ -287,7 +554,11 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
 
       {/* Comments */}
       <div className="mt-4">
-        <CommentBox key={current?.id ?? "none"} initial={current?.comments ?? []} />
+        <CommentBox
+          key={current?.id ?? "none"}
+          initial={current?.comments ?? []}
+          title={current?.title ?? "Discussion"}
+        />
       </div>
 
       {/* Report Modal */}
@@ -369,4 +640,19 @@ export default function ProjectStack({ user, projects, showFollow = true }: Prop
       )}
     </div>
   );
+}
+
+function toTimestamp(value: Project["createdAt"]): number {
+  if (value instanceof Date) {
+    const time = value.getTime();
+    return Number.isNaN(time) ? 0 : time;
+  }
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? 0 : value;
+  }
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
 }
