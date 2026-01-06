@@ -27,11 +27,11 @@ const profile = { username: handle };
               <div>
                 <h1 id="profile-username" class="text-2xl font-bold sm:text-3xl">{handle}</h1>
                 <p id="profile-handle" class="text-slate-400">@{handle}</p>
-                <p id="profile-email" class="text-xs text-slate-500 hidden"></p>
+                <!-- <p id="profile-email" class="text-xs text-slate-500 hidden"></p> -->
                 <div class="mt-2 max-w-2xl">
                   <div class="flex items-start gap-2">
                     <p id="profile-bio" class="text-sm text-slate-300 flex-1"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></p>
-                    <button id="edit-bio-btn" type="button" class="text-slate-400 hover:text-slate-200 transition-colors" aria-label="Edit bio">
+                    <button id="edit-bio-btn" type="button" class="hidden text-slate-400 hover:text-slate-200 transition-colors" aria-label="Edit bio">
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -106,7 +106,7 @@ const profile = { username: handle };
               <div class="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
                 <dt class="text-xs uppercase tracking-wide text-slate-400 flex items-center justify-between">
                   <span>Email</span>
-                  <button id="edit-email-btn" type="button" class="text-slate-400 hover:text-slate-200 transition-colors" aria-label="Edit email">
+                  <button id="edit-email-btn" type="button" class="hidden text-slate-400 hover:text-slate-200 transition-colors" aria-label="Edit email">
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                 </dt>
@@ -183,6 +183,20 @@ const profile = { username: handle };
 
     const handle = document.querySelector('[data-profile-handle]')?.getAttribute('data-profile-handle') || '';
     const baseUrl = import.meta.env.PUBLIC_API_BASE_URL;
+
+    // Check if current user is viewing their own profile
+    function checkIsOwnProfile() {
+      const storedUsername = sessionStorage.getItem('username');
+      return storedUsername === handle;
+    }
+
+    // Show edit buttons if viewing own profile
+    if (checkIsOwnProfile()) {
+      const editBioBtn = document.getElementById('edit-bio-btn');
+      const editEmailBtn = document.getElementById('edit-email-btn');
+      if (editBioBtn) editBioBtn.classList.remove('hidden');
+      if (editEmailBtn) editEmailBtn.classList.remove('hidden');
+    }
 
     async function loadProfile() {
       const token = sessionStorage.getItem('authToken');
@@ -470,4 +484,5 @@ const profile = { username: handle };
     // Load profile data
     loadProfile();
   </script>
+
 </Layout>
