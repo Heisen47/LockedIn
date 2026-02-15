@@ -27,20 +27,6 @@ interface Props {
 }
 
 const normalizeHandle = (handle?: string | null) => (handle ? handle.toLowerCase() : null);
-const getFollowStorageKey = (handle?: string | null) => (handle ? `following:${handle}` : null);
-const getFollowListStorageKey = (viewerHandle?: string | null) => (viewerHandle ? `following:list:${viewerHandle}` : null);
-
-const parseStoredHandleList = (raw: string | null): string[] => {
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed.filter((value): value is string => typeof value === "string").map((value) => value.toLowerCase())
-      : [];
-  } catch {
-    return [];
-  }
-};
 
 const extractHandlesFromPayload = (payload: unknown): string[] => {
   const pickHandle = (entry: any): string | null => {
@@ -79,34 +65,6 @@ const extractHandlesFromPayload = (payload: unknown): string[] => {
     if (Array.isArray(data.data)) return fromArray(data.data as any[]);
   }
   return [];
-};
-
-const updateFollowListCache = (viewerHandle: string | null, targetHandle: string | null, shouldFollow: boolean) => {
-  if (!targetHandle || typeof window === "undefined") return;
-
-  const followKey = getFollowStorageKey(targetHandle);
-  if (followKey) {
-    if (shouldFollow) {
-      sessionStorage.setItem(followKey, "true");
-    } else {
-      sessionStorage.removeItem(followKey);
-    }
-  }
-
-  const listKey = getFollowListStorageKey(viewerHandle);
-  if (!listKey) return;
-
-  const currentHandles = parseStoredHandleList(sessionStorage.getItem(listKey));
-  const hasHandle = currentHandles.includes(targetHandle);
-  let nextHandles = currentHandles;
-
-  if (shouldFollow && !hasHandle) {
-    nextHandles = [...currentHandles, targetHandle];
-  } else if (!shouldFollow && hasHandle) {
-    nextHandles = currentHandles.filter((handle) => handle !== targetHandle);
-  }
-
-  sessionStorage.setItem(listKey, JSON.stringify(nextHandles));
 };
 
 export default function ProjectStack({ user, projects, showFollow = true, initiallyFollowing = false }: Props) {
@@ -159,22 +117,7 @@ export default function ProjectStack({ user, projects, showFollow = true, initia
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const targetHandle = normalizeHandle(user.handle);
-    const viewerHandle = normalizeHandle(sessionStorage.getItem("username"));
-    const listKey = getFollowListStorageKey(viewerHandle);
-    const listHandles = parseStoredHandleList(listKey ? sessionStorage.getItem(listKey) : null);
-    const fromList = targetHandle ? listHandles.includes(targetHandle) : false;
-    const followKey = getFollowStorageKey(targetHandle);
-    const storedFlag = followKey ? sessionStorage.getItem(followKey) === "true" : false;
-
-    if (initiallyFollowing || fromList || storedFlag) {
-      if (followKey) {
-        sessionStorage.setItem(followKey, "true");
-      }
-      setFollowing(true);
-    } else {
-      setFollowing(false);
-    }
+    setFollowing(initiallyFollowing);
   }, [initiallyFollowing, user.handle]);
 
   useEffect(() => {
@@ -201,32 +144,21 @@ export default function ProjectStack({ user, projects, showFollow = true, initia
         const endpoint = base
           ? `${base}/v1/users/${encodeURIComponent(viewerHandle)}/following`
           : `/v1/users/${encodeURIComponent(viewerHandle)}/following`;
+        
         const { data } = await axios.get(endpoint, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
+        
         if (cancelled) return;
 
         const handles = extractHandlesFromPayload(data);
-        const listKey = getFollowListStorageKey(viewerHandle);
-        if (listKey) {
-          sessionStorage.setItem(listKey, JSON.stringify(handles));
-        }
-        handles.forEach((handle) => {
-          const key = getFollowStorageKey(handle);
-          if (key) sessionStorage.setItem(key, "true");
-        });
-
         const targetHandle = normalizeHandle(user.handle);
-        if (targetHandle) {
-          const isFollowingTarget = initiallyFollowing || handles.includes(targetHandle);
-          setFollowing(isFollowingTarget);
-          if (!isFollowingTarget) {
-            const key = getFollowStorageKey(targetHandle);
-            if (key) sessionStorage.removeItem(key);
-          }
+        
+        if (targetHandle && handles.includes(targetHandle)) {
+          setFollowing(true);
         }
       } catch (error) {
         console.error("Unable to refresh following list:", error);
@@ -238,7 +170,7 @@ export default function ProjectStack({ user, projects, showFollow = true, initia
     return () => {
       cancelled = true;
     };
-  }, [showFollow, user.handle, initiallyFollowing]);
+  }, [showFollow, user.handle]);
 
   const handleFollow = async () => {
     if (following || followLoading || isSelf) return;
@@ -272,8 +204,6 @@ export default function ProjectStack({ user, projects, showFollow = true, initia
         }
       );
       setFollowing(true);
-      const viewerHandle = normalizeHandle(sessionStorage.getItem("username"));
-      updateFollowListCache(viewerHandle, normalizeHandle(username), true);
     } catch (error) {
       const message =
         (error as any)?.response?.data?.error ||
@@ -315,8 +245,6 @@ export default function ProjectStack({ user, projects, showFollow = true, initia
         },
       });
       setFollowing(false);
-      const viewerHandle = normalizeHandle(sessionStorage.getItem("username"));
-      updateFollowListCache(viewerHandle, normalizeHandle(username), false);
     } catch (error) {
       const message =
         (error as any)?.response?.data?.error ||

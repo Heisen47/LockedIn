@@ -3,7 +3,7 @@
 ## Architecture & Routing
 - Astro 5 server output drives pages while interactivity is pushed into React islands via `client:load` directives (e.g., [src/pages/index.astro](src/pages/index.astro), [src/pages/profile/[handle].astro](src/pages/profile/%5Bhandle%5D.astro)).
 - Layout + navbar live in Astro (`layouts/Layout.astro`, [src/components/Navbar.astro](src/components/Navbar.astro)); most complex UI (CreatePost, ProjectStack, settings widgets) are React components mounted from Astro templates.
-- Profile and settings views currently render demo data inside the Astro page and rely on localStorage/sessionStorage for persistence; no server loaders are wired up yet, so keep logic client-side unless you introduce real APIs.
+- Profile and settings views currently render demo data inside the Astro page, server loaders are wired up and there exists endpoints ask for the endpoints and don't make up fake data.
 
 ## Build, Run, Deploy
 - Use the npm scripts in [package.json](package.json): `npm run dev` (Astro dev server), `npm run build` (SSR build), `npm run preview` (serve built output), and Vitest commands (`test`, `test:run`, `test:ui`, `test:coverage`).
