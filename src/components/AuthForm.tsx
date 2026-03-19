@@ -52,6 +52,12 @@ export default function AuthForm() {
           return;
         }
         
+        if (formData.bio && (formData.bio.length < 5 || formData.bio.length > 50)) {
+          setError('Bio must be between 5 and 50 characters');
+          setLoading(false);
+          return;
+        }
+        
         const registerData = {
           username: formData.username,
           email: formData.email,

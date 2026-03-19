@@ -25,24 +25,21 @@ const profile = { username: handle };
             <div class="flex items-start gap-6">
               <!-- Avatar with thought bubble connectors -->
               <div class="relative shrink-0">
-                <div class="h-16 w-16 rounded-full border border-slate-800/60 bg-linear-to-br from-cyan-500/20 to-fuchsia-500/20" />
-                <!-- Small thought bubbles connecting from avatar bottom to bio cloud -->
-                <div class="absolute -bottom-1 -right-2 h-1.5 w-2.5 rounded-full border border-slate-800/60 bg-slate-900/60" />
-                <div class="absolute -bottom-3 -right-2 h-2.5 w-2.5 rounded-full border border-slate-800/60 bg-slate-900/60" />
-                <div class="absolute -bottom-6 -right-8 h-3 w-3 rounded-full border border-slate-800/60 bg-slate-900/60" />
+                <div class="h-16 w-16 rounded-full border border-slate-800/60 bg-linear-to-br from-cyan-500/20 to-fuchsia-500/20 shadow-lg shadow-cyan-500/10" />
               </div>
 
               <div class="flex-1">
-                <h1 id="profile-username" class="text-2xl font-bold sm:text-3xl">{handle}</h1>
-                <p id="profile-handle" class="text-slate-400">@{handle}</p>
+                <h1 id="profile-username" class="text-2xl font-bold sm:text-3xl tracking-tight">{handle}</h1>
+                <p id="profile-handle" class="text-slate-400 font-medium">@{handle}</p>
                 <!-- <p id="profile-email" class="text-xs text-slate-500 hidden"></p> -->
 
                 <!-- Thought cloud bio container -->
-                <div class="relative mt-4 max-w-2xl">
-                  <div class="relative rounded-4xl border border-slate-800/60 bg-slate-900/40 p-5 shadow-xl backdrop-blur-sm">
+                <div class="relative mt-4 max-w-2xl group">
+                  <div class="absolute -left-2 -top-2 -z-10 h-6 w-6 rounded-full bg-slate-800/40 blur-xl transition-all duration-500 group-hover:bg-cyan-500/10"></div>
+                  <div class="relative rounded-[2rem] rounded-tl-none border border-slate-800/60 bg-linear-to-br from-slate-900/80 to-slate-900/40 p-6 shadow-2xl backdrop-blur-md transition-all duration-300 hover:border-slate-700/60 hover:shadow-cyan-900/10">
                     <div class="relative flex items-start gap-2">
-                      <p id="profile-bio" class="text-sm text-slate-300 flex-1 leading-relaxed"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></p>
-                      <button id="edit-bio-btn" type="button" class="hidden text-slate-400 hover:text-slate-200 transition-colors" aria-label="Edit bio">
+                      <p id="profile-bio" class="text-sm text-slate-300 flex-1 leading-relaxed font-normal antialiased"><Loader className="inline-block h-3 w-3 animate-spin text-slate-400" /></p>
+                      <button id="edit-bio-btn" type="button" class="hidden text-slate-500 hover:text-cyan-400 transition-colors" aria-label="Edit bio">
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -51,15 +48,15 @@ const profile = { username: handle };
                       <textarea
                         id="bio-input"
                         rows="3"
-                        class="w-full rounded-lg border border-slate-700/60 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 resize-none"
-                        placeholder="Write your bio..."
+                        class="w-full rounded-xl border border-slate-700/60 bg-slate-950/60 px-4 py-3 text-sm text-slate-100 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 resize-none transition-all placeholder:text-slate-600"
+                        placeholder="What's on your mind?"
                       ></textarea>
-                      <div class="mt-2 flex gap-2">
-                        <button id="save-bio-btn" type="button" class="rounded-md bg-cyan-600/80 px-3 py-1 text-xs font-medium text-white hover:bg-cyan-600 transition-colors">
-                          Save
-                        </button>
-                        <button id="cancel-bio-btn" type="button" class="rounded-md bg-slate-700/60 px-3 py-1 text-xs font-medium text-slate-200 hover:bg-slate-700 transition-colors">
+                      <div class="mt-3 flex gap-2 justify-end">
+                        <button id="cancel-bio-btn" type="button" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors">
                           Cancel
+                        </button>
+                        <button id="save-bio-btn" type="button" class="rounded-lg bg-linear-to-r from-cyan-600 to-blue-600 px-4 py-1.5 text-xs font-medium text-white shadow-lg shadow-cyan-900/20 hover:shadow-cyan-900/40 hover:scale-105 transition-all">
+                          Save Thought
                         </button>
                       </div>
                     </div>
