@@ -390,6 +390,23 @@ import TechStackInput from "../components/TechStackInput";
 			const email = (document.getElementById('signup-email') as HTMLInputElement)?.value;
 			const password = (document.getElementById('signup-password') as HTMLInputElement)?.value;
 			const bio = (document.getElementById('signup-bio') as HTMLTextAreaElement)?.value;
+			if (username.length < 4) {
+				showError(signupErrorBox, 'Username must be at least 4 characters');
+				if (submitBtn) {
+					submitBtn.disabled = false;
+					submitBtn.textContent = originalText;
+				}
+				return;
+			}
+
+			if (bio && (bio.length < 5 || bio.length > 50)) {
+				showError(signupErrorBox, 'Bio must be between 5 and 50 characters');
+				if (submitBtn) {
+					submitBtn.disabled = false;
+					submitBtn.textContent = originalText;
+				}
+				return;
+			}
 
 			// Call register API
 			const response = await api.register({

@@ -53,10 +53,18 @@ export default function FeedStacks() {
       setError(null);
       try {
         const base = (import.meta.env.PUBLIC_API_URL ?? "").replace(/\/$/, "");
-        const endpoint = base ? `${base}/getAllPosts` : "getAllPosts";
+        const authToken = typeof window !== "undefined" ? sessionStorage.getItem("authToken") : null;
+        const endpointToUse = authToken ? "/api/v1/fyp" : "/getAllPosts";
+        const endpoint = base ? `${base}${endpointToUse}` : endpointToUse;
+        
+        const headers: Record<string, string> = { Accept: "application/json" };
+        if (authToken) {
+          headers["Authorization"] = `Bearer ${authToken}`;
+        }
+        
         const response = await fetch(endpoint, {
           method: "GET",
-          headers: { Accept: "application/json" },
+          headers,
           cache: "no-store",
           signal: controller.signal,
         });
